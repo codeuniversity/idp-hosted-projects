@@ -9,7 +9,7 @@ on:
         required: true
 
 jobs:
-  create_docker_image:
+  create_submodule:
     permissions:
       contents: "write"
 
@@ -22,6 +22,38 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - id: create_student_submodule
+        name: Add student's repo as a submodule
+        run: |
+          year=$(date '+%Y')
+          user_name=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)
+          repo_name=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)
+
+          if [ ! -d submissions-${year}/${user_name}-${repo_name} ]; then
+            echo "Adding ${{ github.event.inputs.githubRepo }} to ./submissions-${year}/${user_name}-${repo_name}/${user_name}-${repo_name} as a submodule"
+
+            git config --global user.name github-actions
+            git config --global user.email github-actions@github.com
+
+            git submodule add ${{ github.event.inputs.githubRepo }} ./submissions-${year}/${user_name}-${repo_name}/${user_name}-${repo_name}
+            git commit -m "Added ${user_name}-${repo_name} as a submodule by github-actions"
+            git push
+          else
+             echo "Submodule already exists, terminating github actions"
+          fi
+          cd ./submissions-${year}/${user_name}-${repo_name}/
+
+  create_docker_image:
+    permissions:
+      contents: "write"
+    needs: create_submodule
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    if: needs.create_submodule.outcome == 'success'
+    steps:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -30,24 +62,15 @@ jobs:
       - name: Install Github dependents info
         run: pip install -U github-dependents-info
 
-      - name: Add student's repo as a submodule
+      - name: Get submodule's dependencies in JSON file
+        run: github-dependents-info --repo ${user_name}/${repo_name} --json
+
+      - name: Check if the JSON file was created successfully
         run: |
-          year=$(date '+%Y')
-          user_name=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)
-          repo_name=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)
-
-          if [ ! -d submissions-${year}/${user_name}-${repo_name} ]; then
-            echo "Adding ${{ github.event.inputs.githubRepo }} to ./submissions-${year}/${user_name}-${repo_name} as a submodule"
-
-            git config --global user.name github-actions
-            git config --global user.email github-actions@github.com
-
-            git submodule add ${{ github.event.inputs.githubRepo }} ./submissions-${year}/${user_name}-${repo_name}
-            git commit -m "Added ${user_name}-${repo_name} as a submodule by github-actions"
-            git push
+          if [[ -f ${user_name}/${repo_name}.json ]]; then
+            echo "${user_name}/${repo_name}.json exists!"
           else
-             echo "Submodule already exists, terminating github actions"
+            echo "${user_name}/${repo_name}.json does not exist!"
           fi
-          cd ./submissions-${year}/${user_name}-${repo_name}
 
 # need to add export DOCKER_BUILDKIT=1 before building python docker image
