@@ -35,9 +35,9 @@ jobs:
         run: |
           year=&(echo $(date '+%Y'))
           if [ ! -d submissions-${year} ]; then
-           echo `Creating a directory for the current year submissions with \
-                the name submissions-${year}`
-            mkdir submissions-${year}
+           echo "Creating a directory for the current year \
+                 submissions with the name submissions-{year}"
+           mkdir submissions-${year}
           fi
           cd ./submissions-${year}
 
