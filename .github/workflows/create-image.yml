@@ -35,32 +35,24 @@ jobs:
       - name: Install Github dependents info
         run: pip install -U github-dependents-info
 
-      - name: Check if directory exists
-        run: |
-          year=$(date '+%Y')
-          if [ ! -d submissions-${year} ]; then
-           echo "Creating a directory for the current year's submissions with the name submissions-${year}"
-           mkdir submissions-${year}
-          fi
-          cd ./submissions-${year}
-
       - name: Add student's repo as a submodule
         run: |
-          user_name=username=$(echo "${githubRepo}" | cut -d'/' -f4)
-          repo_name=$(echo "${githubRepo}" | cut -d'/' -f5)
+          year=$(date '+%Y')
+          user_name=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)
+          repo_name=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)
 
-          if [ ! -d  ${user_name}-${repo_name} ]; then
-            echo "Adding the #{githubRepo} to ${user_name}-${repo_name} as a submodule"
+          if [ ! -d submissions-${year}/${user_name}-${repo_name} ]; then
+            echo "Adding ${{ github.event.inputs.githubRepo }} to ./submissions-${year}/${user_name}-${repo_name} as a submodule"
 
             git config --global user.name github-actions
             git config --global user.email github-actions@github.com
 
-            git submodule add ${githubRepo} ${user_name}-${repo_name}
+            git submodule add ${{ github.event.inputs.githubRepo }} ./submissions-${year}/${user_name}-${repo_name}
             git commit -m "Added ${user_name}-${repo_name} as a submodule by github-actions"
             git push
           else
              echo "Submodule already exists, terminating github actions"
           fi
-          cd ./ ${user_name}-${repo_name}
+          cd ./submissions-${year}/${user_name}-${repo_name}
 
 # need to add export DOCKER_BUILDKIT=1 before building python docker image
