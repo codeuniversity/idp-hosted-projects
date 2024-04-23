@@ -7,6 +7,10 @@ on:
       githubRepo:
         description: "Link of public github repo to deploy"
         required: true
+    inputs:
+      githubRepo:
+        description: "Link of public github repo to deploy"
+        required: true
 
 jobs:
   create_docker_image:
