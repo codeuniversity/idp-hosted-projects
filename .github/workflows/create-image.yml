@@ -3,10 +3,10 @@ name: "initial-image-build-workflow"
 on:
   # Trigger a specific workflow run on demand without need for a code push/pull request
   workflow_dispatch:
-    # inputs:
-    #   githubRepo:
-    #     description: "Link of public github repo to deploy"
-    #     required: true
+    inputs:
+      githubRepo:
+        description: "Link of public github repo to deploy"
+        required: true
 
 jobs:
   create_docker_image:
@@ -39,5 +39,24 @@ jobs:
            mkdir submissions-${year}
           fi
           cd ./submissions-${year}
+
+      - name: Add student's repo as a submodule
+      - run: |
+          user_name=username=$(echo "${githubRepo}" | cut -d'/' -f4)
+          repo_name=$(echo "${githubRepo}" | cut -d'/' -f5)
+
+          if [ ! -d  ${user_name}-${repo_name} ]; then
+            echo "Adding the #{githubRepo} to ${user_name}-${repo_name} as a submodule"
+
+            git config --global user.name github-actions
+            git config --global user.email github-actions@github.com
+
+            git submodule add ${githubRepo} ${user_name}-${repo_name}
+            git commit -m "Added ${user_name}-${repo_name} as a submodule by github-actions"
+            git push
+          else
+             echo "Submodule already exists, terminating github actions"
+          fi
+          cd ./ ${user_name}-${repo_name}
 
 # need to add export DOCKER_BUILDKIT=1 before building python docker image
