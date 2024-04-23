@@ -11,8 +11,7 @@ on:
 jobs:
   create_docker_image:
     permissions:
-      contents: "read"
-      id-token: "write"
+      contents: "write"
 
     runs-on: ubuntu-latest
     defaults:
@@ -42,21 +41,21 @@ jobs:
 
       - name: Add student's repo as a submodule
         run: |
-          user_name=username=$(echo "${githubRepo}" | cut -d'/' -f4)
-          repo_name=$(echo "${githubRepo}" | cut -d'/' -f5)
+          user_name=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)
+          repo_name=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)
 
           if [ ! -d  ${user_name}-${repo_name} ]; then
-            echo "Adding the #{githubRepo} to ${user_name}-${repo_name} as a submodule"
+            echo "Adding ${{ github.event.inputs.githubRepo }} to ${user_name}-${repo_name} as a submodule"
 
             git config --global user.name github-actions
             git config --global user.email github-actions@github.com
 
-            git submodule add ${githubRepo} ${user_name}-${repo_name}
+            git submodule add ${{ github.event.inputs.githubRepo }} ${user_name}-${repo_name}
             git commit -m "Added ${user_name}-${repo_name} as a submodule by github-actions"
             git push
           else
              echo "Submodule already exists, terminating github actions"
           fi
-          cd ./ ${user_name}-${repo_name}
+          cd ./${user_name}-${repo_name}
 
 # need to add export DOCKER_BUILDKIT=1 before building python docker image
