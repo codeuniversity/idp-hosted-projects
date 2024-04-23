@@ -41,7 +41,7 @@ jobs:
           cd ./submissions-${year}
 
       - name: Add student's repo as a submodule
-      - run: |
+        run: |
           user_name=username=$(echo "${githubRepo}" | cut -d'/' -f4)
           repo_name=$(echo "${githubRepo}" | cut -d'/' -f5)
 
