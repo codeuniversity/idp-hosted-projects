@@ -1,7 +1,7 @@
 name: "initial-image-build-workflow"
 
 on:
-  # Trigger a specific workflow run on demand without need for a code push/pull request
+  # Trigger a specific workflow run on demand without need for a code push/pull
   workflow_dispatch:
     inputs:
       githubRepo:
