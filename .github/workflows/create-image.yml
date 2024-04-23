@@ -3,12 +3,16 @@ name: "initial-image-build-workflow"
 on:
   # Trigger a specific workflow run on demand without need for a code push/pull request
   workflow_dispatch:
-    # inputs:
-    #   githubRepo:
-    #     description: "Link of public github repo to deploy"
-    #     required: true
+    inputs:
+      githubRepo:
+        description: "Link of public github repo to deploy"
+        required: true
 
 jobs:
+  create_docker_image:
+    permissions:
+      contents: "read"
+      id-token: "write"
   create_docker_image:
     permissions:
       contents: "read"
@@ -17,18 +21,18 @@ jobs:
     defaults:
       run:
         shell: bash
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
       - name: Set up Python 3.8
         run: actions/setup-python@v2
         with:
           python-version: 3.8
-
       - name: Install Github dependents info
         run: pip install -U github-dependents-info
-
       - name: Check if directory exists
         run: |
           year=&(echo $(date '+%Y'))
