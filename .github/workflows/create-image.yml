@@ -3,27 +3,22 @@ name: "initial-image-build-workflow"
 on:
   # Trigger a specific workflow run on demand without need for a code push/pull
   workflow_dispatch:
-    inputs:
-      githubRepo:
-        description: "Link of public github repo to deploy"
-        required: true
+    # inputs:
+    #   githubRepo:
+    #     description: "Link of public github repo to deploy"
+    #     required: true
 
 jobs:
   create_docker_image:
     permissions:
       contents: "read"
       id-token: "write"
-  create_docker_image:
-    permissions:
-      contents: "read"
-      id-token: "write"
+
     runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash
-    defaults:
-      run:
-        shell: bash
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
