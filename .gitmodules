@@ -4,3 +4,6 @@
 [submodule "submissions-2024/maggieekubat-Recipe"]
 	path = submissions-2024/maggieekubat-Recipe
 	url = https://github.com/maggieekubat/Recipe
+[submodule "submissions-2024/lillywallawitsch-Wondernest.Express"]
+	path = submissions-2024/lillywallawitsch-Wondernest.Express
+	url = https://github.com/lillywallawitsch/Wondernest.Express
