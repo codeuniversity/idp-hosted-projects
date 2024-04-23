@@ -1,14 +1,38 @@
 name: "initial-image-build-workflow"
 
 on:
-  workflow_dispatch: # Put here!!
+  # Trigger a specific workflow run on demand without need for a code push/pull request
+  workflow_dispatch:
+    inputs:
+      githubRepo:
+        description: "Link of public github repo to deploy"
+        required: true
 
 jobs:
-  build:
+  create_docker_image:
+    permissions:
+      contents: "read"
+      id-token: "write"
     runs-on: ubuntu-latest
-
+    defaults:
+      run:
+        shell: bash
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Python 3.8
+        run: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install Github dependents info
+        run: pip install -U github-dependents-info
+      - name: Check if directory exists
+      - run: |
+          year=&(echo $(date '+%Y'))
+          if [ -d submissions${year} ]; then
+           echo "Directory exists"
+          else
+           echo "Directory does not exist"
+          fi
 
-      - name: Run a one-line script
-        run: echo Hello, world!
+# need to add export DOCKER_BUILDKIT=1 before building python docker image
