@@ -27,7 +27,7 @@ jobs:
       - name: Install Github dependents info
         run: pip install -U github-dependents-info
       - name: Check if directory exists
-      - run: |
+        run: |
           year=&(echo $(date '+%Y'))
           if [ -d submissions${year} ]; then
            echo "Directory exists"
