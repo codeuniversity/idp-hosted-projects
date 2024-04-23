@@ -23,11 +23,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Set up Python 3.8
-        run: actions/setup-python@v2
-        with:
-          python-version: 3.8
+        run: actions/setup-python@v3.8
+
       - name: Install Github dependents info
         run: pip install -U github-dependents-info
+
       - name: Check if directory exists
         run: |
           year=&(echo $(date '+%Y'))
