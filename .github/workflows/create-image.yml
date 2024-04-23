@@ -1,7 +1,7 @@
 name: "initial-image-build-workflow"
 
 on:
-  # Trigger a specific workflow run on demand without need for a code push/pull request
+  # Trigger a specific workflow run on demand without need for a code push/pull
   workflow_dispatch:
     inputs:
       githubRepo:
@@ -27,7 +27,7 @@ jobs:
       - name: Install Github dependents info
         run: pip install -U github-dependents-info
       - name: Check if directory exists
-      - run: |
+        run: |
           year=&(echo $(date '+%Y'))
           if [ -d submissions${year} ]; then
            echo "Directory exists"
