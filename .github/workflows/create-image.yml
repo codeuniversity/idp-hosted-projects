@@ -7,6 +7,10 @@ on:
       githubRepo:
         description: "Link of public github repo to deploy"
         required: true
+    inputs:
+      githubRepo:
+        description: "Link of public github repo to deploy"
+        required: true
 
 jobs:
   create_docker_image:
@@ -41,7 +45,7 @@ jobs:
           cd ./submissions-${year}
 
       - name: Add student's repo as a submodule
-      - run: |
+        run: |
           user_name=username=$(echo "${githubRepo}" | cut -d'/' -f4)
           repo_name=$(echo "${githubRepo}" | cut -d'/' -f5)
 
