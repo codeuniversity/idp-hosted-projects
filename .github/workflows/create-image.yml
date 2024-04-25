@@ -80,14 +80,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-
-      - name: Install it github-depends-info to deduce dependencies.
-        run: pip install -U github-dependents-info
-
       - name: Pull the changes made in the repository.
         run: git pull --recurse-submodules
 
@@ -106,7 +98,11 @@ jobs:
 
       - name: Get submodule's dependencies in JSON file
         run: |
-          github-dependents-info --repo /${{ needs.create_submodule.outputs.user_name }}/${{ needs.create_submodule.outputs.repo_name}} --json  >> dependencies.json
+          curl -L \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ secrets.DEPENDENCY_GRAPH_TOKEN }}" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          https://api.github.com/repos/${{ needs.create_submodule.outputs.user_name }}/${{ needs.create_submodule.outputs.repo_name }}/dependency-graph/sbom  >> dependencies.json
 
       - name: Check if the JSON file was created successfully
         run: |
