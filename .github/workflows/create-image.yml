@@ -34,26 +34,26 @@ jobs:
           echo "USER_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)" >> $GITHUB_ENV
           echo "REPO_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)" >> $GITHUB_ENV
 
-          if [ ! -d submissions-$YEAR/$USER_NAME-$REPO_NAME ]; then
-            echo "Adding ${{ github.event.inputs.githubRepo }} to ./submissions-$YEAR/$USER_NAME-$REPO_NAME/$USER_NAME-$REPO_NAME as a submodule"
+          if [ ! -d submissions-${{ env.YEAR }}/${{ env.USER_NAME }}-${{ env.REPO_NAME }} ]; then
+            echo "Adding ${{ github.event.inputs.githubRepo }} to ./submissions-${{ env.YEAR }}/${{ env.USER_NAME }}-${{ env.REPO_NAME }}/${{ env.USER_NAME }}-${{ env.REPO_NAME }} as a submodule"
 
             git config --global user.name github-actions
             git config --global user.email github-actions@github.com
 
-            git submodule add ${{ github.event.inputs.githubRepo }} ./submissions-$YEAR/$USER_NAME-$REPO_NAME/$USER_NAME-$REPO_NAME
+            git submodule add ${{ github.event.inputs.githubRepo }} ./submissions-${{ env.YEAR }}/${{ env.USER_NAME }}-${{ env.REPO_NAME }}/${{ env.USER_NAME }}-${{ env.REPO_NAME }}
 
-            git commit -m "Added $USER_NAME-$REPO_NAME as a submodule by github-actions"
+            git commit -m "Added ${{ env.USER_NAME }}-${{ env.REPO_NAME }} as a submodule by github-actions"
             git push
           else
              echo "Submodule already exists, terminating github actions"
           fi
-          cd ./submissions-$YEAR/$USER_NAME-$REPO_NAME/
+          cd ./submissions-${{ env.YEAR }}/${{ env.USER_NAME }}-${{ env.REPO_NAME }}/
 
     outputs:
       status: ${{ steps.create_student_submodule.outcome }}
-      year: $YEAR
-      user_name: $USER_NAME
-      repo_name: $REPO_NAME
+      year: ${{ env.YEAR }}
+      user_name: ${{ env.USER_NAME }}
+      repo_name: ${{ env.REPO_NAME }}
 
   create_docker_image:
     needs: create_submodule
