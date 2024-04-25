@@ -79,13 +79,13 @@ jobs:
 
       - name: Get submodule's dependencies in JSON file
         run: |
-          $ echo it-depends ${{ needs.create_submodule.outputs.user_name }}/${{ needs.create_submodule.outputs.repo_name }} --depth-limit 1 >> ${{ needs.create_submodule.outputs.user_name }}/${{ needs.create_submodule.outputs.repo_name }}.json
+          it-depends ${{ needs.create_submodule.outputs.user_name }}/${{ needs.create_submodule.outputs.repo_name }} --depth-limit 1 >> ${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name }}.json
       - name: Check if the JSON file was created successfully
         run: |
-          if [[ -f ${{ needs.create_submodule.outputs.user_name }}/${{ needs.create_submodule.outputs.repo_name }}.json ]]; then
-            cat ${{ needs.create_submodule.outputs.user_name }}/${{ needs.create_submodule.outputs.repo_name }}.json
+          if [[ -f ${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name }}.json ]]; then
+            cat ${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name }}.json
           else
-            echo "${{ needs.create_submodule.outputs.user_name }}/${{ needs.create_submodule.outputs.repo_name }}.json does not exist!"
+            echo "${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name }}.json does not exist!"
           fi
 
 # need to add export DOCKER_BUILDKIT=1 before building python docker image
