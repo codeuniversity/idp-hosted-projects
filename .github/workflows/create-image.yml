@@ -48,10 +48,10 @@ jobs:
             git commit -m "Added ${user_name}-${repo_name} as a submodule by github-actions"
             git push
 
-            echo "STATUS=(echo 'success')" >> $GITHUB_ENV
+            echo "STATUS=$(echo 'success')" >> $GITHUB_ENV
           else
             echo "Submodule already exists, terminating github actions"
-            echo "STATUS=(echo 'failure')" >> $GITHUB_ENV
+            echo "STATUS=$(echo 'failure')" >> $GITHUB_ENV
 
           fi
           echo "The result is ${{ env.STATUS }}"
