@@ -108,7 +108,7 @@ jobs:
         run: |
           cd ./submissions-${{ needs.create_submodule.outputs.year }}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
 
-          it-depends  >> dependencies.json
+          it-depends --depth-limit 1  >> dependencies.json
 
       - name: Check if the JSON file was created successfully
         run: |
