@@ -90,7 +90,15 @@ jobs:
         run: |
           ls -a
 
-          cd submissions-${{ needs.create_submodule.outputs.year }}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
+          cd ./submissions-${{ needs.create_submodule.outputs.year }}
+
+          ls -a
+
+          cd ./${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
+
+          ls -a
+
+          cd ./${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
 
           git submodule update --init --recursive
 
