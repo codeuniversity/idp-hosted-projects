@@ -88,17 +88,8 @@ jobs:
 
       - name: Clone the code in the repository of the submodule
         run: |
-          ls -a
 
-          cd ./submissions-${{ needs.create_submodule.outputs.year }}
-
-          ls -a
-
-          cd ./${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
-
-          ls -a
-
-          cd ./${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
+          cd ./submissions-${{ needs.create_submodule.outputs.year }}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
 
           git submodule update --init --recursive
 
@@ -111,7 +102,9 @@ jobs:
 
       - name: Get submodule's dependencies in JSON file
         run: |
-          it-depends . >> dependencies.json
+          ls -a 
+
+          it-depends  >> dependencies.json
 
       - name: Check if the JSON file was created successfully
         run: |
