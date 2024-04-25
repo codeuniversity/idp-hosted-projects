@@ -68,6 +68,9 @@ jobs:
 
     if: needs.create_submodule.outputs.status == 'success'
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
