@@ -57,7 +57,7 @@ jobs:
       run:
         shell: bash
 
-    if: needs.create_submodule.outcome == 'success'
+    if: needs.create_submodule.create_student_submodule.outcome == 'success'
     steps:
       - name: Set up Python
         uses: actions/setup-python@v5
