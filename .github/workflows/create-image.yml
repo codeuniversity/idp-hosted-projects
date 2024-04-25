@@ -39,12 +39,17 @@ jobs:
           repo_name=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)
 
           if [ ! -d submissions-${year}/${user_name}-${repo_name} ]; then
-            echo "Adding ${{ github.event.inputs.githubRepo }} to ./submissions-${year}/${user_name}-${repo_name} as a submodule"
+            echo "Adding ${{ github.event.inputs.githubRepo }} to ./submissions-${year}/${user_name}-${repo_name}/${user_name}-${repo_name} as a submodule"
 
             git config --global user.name github-actions
             git config --global user.email github-actions@github.com
 
-            git submodule add ${{ github.event.inputs.githubRepo }} ./submissions-${year}/${user_name}-${repo_name}
+            mkdir submissions-${year}
+            cd ./submissions-${year}
+            mkdir ${user_name}-${repo_name}
+            cd ./${user_name}-${repo_name}
+
+            git submodule add ${{ github.event.inputs.githubRepo }} ./${user_name}-${repo_name}
             git commit -m "Added ${user_name}-${repo_name} as a submodule by github-actions"
             git push
 
@@ -88,10 +93,6 @@ jobs:
 
       - name: Clone the code in the repository of the submodule
         run: |
-          cd submissions-${{ needs.create_submodule.outputs.year }}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
-
-          mkdir ${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
-
           cd ./${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
 
           git submodule update --init --recursive
