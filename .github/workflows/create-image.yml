@@ -71,6 +71,9 @@ jobs:
       - name: Install it depends to deduce dependencies.
         run: pip install it-depends
 
+      - name: Pull the changes made in the repository.
+        run: git pull --recurse-submodules
+
       - name: Get submodule's dependencies in JSON file
         run: |
           cd ./submissions-${{ needs.create_submodule.outputs.year }}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name }}
