@@ -81,6 +81,18 @@ jobs:
       - name: Pull the changes made in the repository.
         run: git pull --recurse-submodules
 
+      - name: Clone the code in the repository of the submodule
+        run: |
+          cd submissions-${{ needs.create_submodule.outputs.year }}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
+          git submodule update --init --recursive
+
+      - name: Prepare the outputs for the next job
+        run: |
+          echo "YEAR=$(date '+%Y')" >> $GITHUB_ENV
+          echo "USER_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)" >> $GITHUB_ENV
+          echo "REPO_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)" >> $GITHUB_ENV
+          echo "SHA_VALUE=$(echo git submodule status)" >> $GITHUB_ENV
+
       - name: Get submodule's dependencies in JSON file
         run: |
           it-depends submissions-${{ needs.create_submodule.outputs.year }}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name }} >> dependencies.json
@@ -91,5 +103,9 @@ jobs:
           else
             echo "${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name }}.json does not exist!"
           fi
-
+    outputs:
+      current_comment_sha: ${{ env.SHA_VALUE }}
+      year: ${{ env.YEAR }}
+      user_name: ${{ env.USER_NAME }}
+      repo_name: ${{ env.REPO_NAME }}
 # need to add export DOCKER_BUILDKIT=1 before building python docker image
