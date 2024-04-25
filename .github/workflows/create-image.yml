@@ -69,12 +69,9 @@ jobs:
 
       - name: Get submodule's dependencies in JSON file
         run: github-dependents-info --repo ${needs.create_submodule.outputs.user_name}/${needs.create_submodule.outputs.repo_name} --json
-        run: github-dependents-info --repo ${needs.create_submodule.outputs.user_name}/${needs.create_submodule.outputs.repo_name} --json
 
       - name: Check if the JSON file was created successfully
         run: |
-          if [[ -f ${needs.create_submodule.outputs.user_name}/${needs.create_submodule.outputs.repo_name}.json ]]; then
-            echo "${needs.create_submodule.outputs.user_name}/${needs.create_submodule.outputs.repo_name}.json exists!"
           if [[ -f ${needs.create_submodule.outputs.user_name}/${needs.create_submodule.outputs.repo_name}.json ]]; then
             echo "${needs.create_submodule.outputs.user_name}/${needs.create_submodule.outputs.repo_name}.json exists!"
           else
