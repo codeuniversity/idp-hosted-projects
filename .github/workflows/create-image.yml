@@ -74,14 +74,14 @@ jobs:
         run: pip install -U github-dependents-info
 
       - name: Get submodule's dependencies in JSON file
-        run: github-dependents-info --repo ${jobs.create_submodule.env.user_name}/${jobs.create_submodule.env.repo_name} --json
+        run: github-dependents-info --repo ${jobs.create_submodule.steps[*].create_student_submodule.env.user_name}/${jobs.create_submodule.steps[*].create_student_submodule.env.repo_name} --json
 
       - name: Check if the JSON file was created successfully
         run: |
-          if [[ -f ${jobs.create_submodule.env.user_name}/${jobs.create_submodule.env.repo_name}.json ]]; then
-            echo "${jobs.create_submodule.env.user_name}/${jobs.create_submodule.env.repo_name}.json exists!"
+          if [[ -f ${jobs.create_submodule.steps[*].create_student_submodule.env.user_name}/${jobs.create_submodule.steps[*].create_student_submodule.env.repo_name}.json ]]; then
+            echo "${jobs.create_submodule.steps[*].create_student_submodule.env.user_name}/${jobs.create_submodule.steps[*].create_student_submodule.env.repo_name}.json exists!"
           else
-            echo "${jobs.create_submodule.env.user_name}/${jobs.create_submodule.env.repo_name}.json does not exist!"
+            echo "${jobs.create_submodule.steps[*].create_student_submodule.env.user_name}/${jobs.create_submodule.steps[*].create_student_submodule.env.repo_name}.json does not exist!"
           fi
 
 # need to add export DOCKER_BUILDKIT=1 before building python docker image
