@@ -49,6 +49,7 @@ jobs:
           cd ./submissions-${year}/${user_name}-${repo_name}/
 
   create_docker_image:
+    needs: create_submodule
     permissions:
       contents: "write"
     runs-on: ubuntu-latest
@@ -56,7 +57,7 @@ jobs:
       run:
         shell: bash
 
-    if: create_submodule.steps.create_student_submodule.outcome == 'success'
+    if: needs.create_submodule.steps.create_student_submodule.outcome == 'success'
     steps:
       - name: Set up Python
         uses: actions/setup-python@v5
