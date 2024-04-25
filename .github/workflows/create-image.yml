@@ -42,17 +42,21 @@ jobs:
             git submodule add ${{ github.event.inputs.githubRepo }} ./submissions-${year}/${user_name}-${repo_name}/${user_name}-${repo_name}
             git commit -m "Added ${user_name}-${repo_name} as a submodule by github-actions"
             git push
+
+            echo "STATUS='success'" >> $GITHUB_ENV
           else
-             echo "Submodule already exists, terminating github actions"
+            echo "Submodule already exists, terminating github actions"
+            echo "STATUS='failure'" >> $GITHUB_ENV
+
           fi
 
     outputs:
-      status: ${{ steps.create_student_submodule.outcome }}
+      status: ${{ env.STATUS }}
       year: ${{ env.YEAR }}
       user_name: ${{ env.USER_NAME }}
       repo_name: ${{ env.REPO_NAME }}
 
-  create_docker_image:
+  get_repository_dependencies:
     needs: create_submodule
     permissions:
       contents: "write"
@@ -81,7 +85,7 @@ jobs:
         run: |
           cd ./submissions-${{ needs.create_submodule.outputs.year }}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name }}
 
-          it-depends --depth-limit 1 >> dependencies.json
+          it-depends >> dependencies.json
       - name: Check if the JSON file was created successfully
         run: |
           if [[ -f dependencies.json ]]; then
