@@ -83,9 +83,7 @@ jobs:
 
       - name: Get submodule's dependencies in JSON file
         run: |
-          cd submissions-${{ needs.create_submodule.outputs.year }}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name }}
-
-          it-depends >> dependencies.json
+          it-depends submissions-${{ needs.create_submodule.outputs.year }}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name }} >> dependencies.json
       - name: Check if the JSON file was created successfully
         run: |
           if [[ -f dependencies.json ]]; then
