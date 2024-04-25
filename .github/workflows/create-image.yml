@@ -51,7 +51,7 @@ jobs:
              echo "Submodule already exists, terminating github actions"
           fi
 
-          cd ./submissions-${year}/${user_name}-${repo_name}/
+          cd ./submissions-${year}/${user_name}-${repo_name}/${user_name}-${repo_name}
     outputs:
       status: ${{ steps.create_student_submodule.outcome }}
       year: ${{ env.YEAR }}
@@ -79,9 +79,11 @@ jobs:
 
       - name: Get submodule's dependencies in JSON file
         run: |
-          it-depends ${{ needs.create_submodule.outputs.user_name }}/${{ needs.create_submodule.outputs.repo_name }} --depth-limit 1 >> ${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name }}.json
+          it-depends . --depth-limit 1 >> ${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name }}.json
       - name: Check if the JSON file was created successfully
         run: |
+          if [[ -f ${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name }}.json ]]; then
+            cat ${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name }}.json
           if [[ -f ${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name }}.json ]]; then
             cat ${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name }}.json
           else
