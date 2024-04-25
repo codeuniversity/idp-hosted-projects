@@ -47,11 +47,16 @@ jobs:
              echo "Submodule already exists, terminating github actions"
           fi
           cd ./submissions-${year}/${user_name}-${repo_name}/
+        env:
+          year: ${year}
+          user_name: ${user_name}
+          repo_name: ${repo_name}
+
     outputs:
       status: ${{ steps.create_student_submodule.outcome }}
-      year: ${year}
-      user_name: ${user_name}
-      repo_name: ${repo_name}
+      year: ${{ steps.create_student_submodule.env.year }}
+      user_name: ${{ steps.create_student_submodule.env.user_name }}
+      repo_name: ${{ steps.create_student_submodule.env.repo_name }}
 
   create_docker_image:
     needs: create_submodule
