@@ -14,6 +14,8 @@ on:
 
 jobs:
   create_submodule:
+    outputs:
+      status: ${{ steps.create_student_submodule.outcome }}
     permissions:
       contents: "read"
       id-token: "write"
@@ -57,7 +59,7 @@ jobs:
       run:
         shell: bash
 
-    if: needs.create_submodule.steps.create_student_submodule.outcome == 'success'
+    if: needs.create_submodule.outputs.status == 'success'
     steps:
       - name: Set up Python
         uses: actions/setup-python@v5
