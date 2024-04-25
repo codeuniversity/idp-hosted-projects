@@ -49,7 +49,7 @@ jobs:
             echo "STATUS='failure'" >> $GITHUB_ENV
 
           fi
-          echo $STATUS
+          echo "The result is ${{ env.STATUS }}"
 
     outputs:
       status: ${{ env.STATUS }}
