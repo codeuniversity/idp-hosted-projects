@@ -25,33 +25,30 @@ jobs:
       - id: create_student_submodule
         name: Add student's repo as a submodule
         run: |
-          year=$(date '+%Y')
-          user_name=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)
-          repo_name=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)
+          echo "YEAR=$(date '+%Y')" >> $GITHUB_ENV
+          echo "USER_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)" >> $GITHUB_ENV
+          echo "REPO_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)" >> $GITHUB_ENV
 
-          if [ ! -d submissions-${year}/${user_name}-${repo_name} ]; then
-            echo "Adding ${{ github.event.inputs.githubRepo }} to ./submissions-${year}/${user_name}-${repo_name}/${user_name}-${repo_name} as a submodule"
+          if [ ! -d submissions-$YEAR/$USER_NAME-$REPO_NAME ]; then
+            echo "Adding ${{ github.event.inputs.githubRepo }} to ./submissions-$YEAR/$USER_NAME-$REPO_NAME/$USER_NAME-$REPO_NAME as a submodule"
 
             git config --global user.name github-actions
             git config --global user.email github-actions@github.com
 
-            git submodule add ${{ github.event.inputs.githubRepo }} ./submissions-${year}/${user_name}-${repo_name}/${user_name}-${repo_name}
-            git commit -m "Added ${user_name}-${repo_name} as a submodule by github-actions"
+            git submodule add ${{ github.event.inputs.githubRepo }} ./submissions-$YEAR/$USER_NAME-$REPO_NAME/$USER_NAME-$REPO_NAME
+
+            git commit -m "Added $USER_NAME-$REPO_NAME as a submodule by github-actions"
             git push
           else
              echo "Submodule already exists, terminating github actions"
           fi
-          cd ./submissions-${year}/${user_name}-${repo_name}/
-        env:
-          year: ${year}
-          user_name: ${user_name}
-          repo_name: ${repo_name}
+          cd ./submissions-$YEAR/$USER_NAME-$REPO_NAME/
 
     outputs:
       status: ${{ steps.create_student_submodule.outcome }}
-      year: ${{ steps.create_student_submodule.env.year }}
-      user_name: ${{ steps.create_student_submodule.env.user_name }}
-      repo_name: ${{ steps.create_student_submodule.env.repo_name }}
+      year: $YEAR
+      user_name: $USER_NAME
+      repo_name: $REPO_NAME
 
   create_docker_image:
     needs: create_submodule
