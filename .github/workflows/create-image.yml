@@ -49,6 +49,7 @@ jobs:
             echo "STATUS='failure'" >> $GITHUB_ENV
 
           fi
+          echo $STATUS
 
     outputs:
       status: ${{ env.STATUS }}
@@ -65,7 +66,7 @@ jobs:
       run:
         shell: bash
 
-    if: needs.create_submodule.outputs.status === 'success'
+    if: needs.create_submodule.outputs.status == 'success'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
