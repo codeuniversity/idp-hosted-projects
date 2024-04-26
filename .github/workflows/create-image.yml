@@ -91,10 +91,17 @@ jobs:
           echo "REPO_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)" >> $GITHUB_ENV
           echo "SHA_VALUE=$(echo git submodule status)" >> $GITHUB_ENV
 
+      - name: Test API that it gives result
+        run: |
+          curl -L \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ secrets.DEPENDENCY_GRAPH_TOKEN }}" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          https://api.github.com/repos/${{ needs.create_submodule.outputs.user_name }}/${{ needs.create_submodule.outputs.repo_name }}/dependency-graph/sbom
+
       - name: Get submodule's dependencies in JSON file
         run: |
-          echo "EXPRESS_VALUE=$(
-          curl -L \
+          echo "EXPRESS_VALUE=$( echo curl -L \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ secrets.DEPENDENCY_GRAPH_TOKEN }}" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
