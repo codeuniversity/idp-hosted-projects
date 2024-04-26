@@ -96,21 +96,21 @@ jobs:
           echo "REPO_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)" >> $GITHUB_ENV
           echo "SHA_VALUE=$(echo git submodule status)" >> $GITHUB_ENV
 
-      - name: Test API that it gives result
+      - name: Get submodule's dependencies
         run: |
-          curl -L \
+          echo "JSON_VALUE=$( curl -L \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ secrets.DEPENDENCY_GRAPH_TOKEN }}" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
-          https://api.github.com/repos/${{ needs.create_submodule.outputs.user_name }}/${{ needs.create_submodule.outputs.repo_name }}/dependency-graph/sbom
+          https://api.github.com/repos/${{ needs.create_submodule.outputs.user_name }}/${{ needs.create_submodule.outputs.repo_name }}/dependency-graph/sbom )"  >> $GITHUB_ENV
 
-      - name: Get submodule's dependencies in JSON file
+      - name: Look for express dependencies
         run: |
-          echo "EXPRESS_VALUE=$( echo curl -L \
-          -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer ${{ secrets.DEPENDENCY_GRAPH_TOKEN }}" \
-          -H "X-GitHub-Api-Version: 2022-11-28" \
-          https://api.github.com/repos/${{ needs.create_submodule.outputs.user_name }}/${{ needs.create_submodule.outputs.repo_name }}/dependency-graph/sbom | jq '.externalRefs[] | select(.referenceLocator | test("pkg:npm/express")) | .referenceLocator')" >> $GITHUB_ENV
+          echo ${{ env.JSON_VALUE }}
+
+          echo "EXPRESS_VALUE=$( echo ${{ env.JSON_VALUE }} | jq '.externalRefs[] | select(.referenceLocator | test("pkg:npm/express")) | .referenceLocator')" >> $GITHUB_ENV
+
+          echo ${{ env.EXPRESS_VALUE }}
 
       - name: Check if the JSON file was created successfully
         run: |
