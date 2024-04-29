@@ -38,13 +38,16 @@ jobs:
           user_name=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)
           repo_name=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)
 
+          if [ ! -d submissions-${year} ]; then
+            mkdir submissions-${year}
+          fi
+
           if [ ! -d submissions-${year}/${user_name}-${repo_name} ]; then
             echo "Adding ${{ github.event.inputs.githubRepo }} to ./submissions-${year}/${user_name}-${repo_name}/${user_name}-${repo_name} as a submodule"
 
             git config --global user.name github-actions
             git config --global user.email github-actions@github.com
 
-            mkdir submissions-${year}
             cd ./submissions-${year}
             mkdir ${user_name}-${repo_name}
             cd ./${user_name}-${repo_name}
@@ -94,44 +97,42 @@ jobs:
           echo "YEAR=$(date '+%Y')" >> $GITHUB_ENV
           echo "USER_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)" >> $GITHUB_ENV
           echo "REPO_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)" >> $GITHUB_ENV
-          echo "SHA_VALUE=$(echo git submodule status)" >> $GITHUB_ENV
+          echo "SHA_VALUE=$(git submodule status | awk '{print $1}')" >> $GITHUB_ENV
 
-      - name: Get submodule's dependencies
+      - id: extracting_dependencies
+        name: Get submodule's dependencies
         run: |
+
+          cd ./submissions-${{ needs.create_submodule.outputs.year }}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
+
           curl -L \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ secrets.DEPENDENCY_GRAPH_TOKEN }}" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
-          https://api.github.com/repos/${{ needs.create_submodule.outputs.user_name }}/${{ needs.create_submodule.outputs.repo_name }}/dependency-graph/sbom >> dependencies.json
+          https://api.github.com/repos/${{ needs.create_submodule.outputs.user_name }}/${{ needs.create_submodule.outputs.repo_name }}/dependency-graph/sbom >> extracted_dependencies.json
 
-          cat dependencies.json
+          jq '.sbom.packages' extracted_dependencies.json >> extracted_packages.json
 
-      - name: Look for express dependencies
-      - id: extracting_dependencies
+          jq ".[] | .name" extracted_packages.json >> package_names_list.txt  
+
+          rm extracted_dependencies.json extracted_packages.json
+
+      - name: Copy the docker file based on the repository dependencies
         run: |
-          jq '.sbom.packages' depends.json >> packages.json
-          express_dependencies=$(jq '.[] | .name' packages.json | grep "npm:express") >> $GITHUB_OUTPUT
-          flask_dependencies=$(jq '.[] | .name' packages.json | grep "pip:flask") >> $GITHUB_OUTPUT
+          cd ./submissions-${{ needs.create_submodule.outputs.year }}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
 
-          echo ${express_dependencies}
-          echo ${flask_dependencies}
-
-      - name: Check if the JSON file was created successfully
-        run: |
-          if [[ express_dependencies==*'npm:express'* ]]; then
-           if [[ -f 'package.json' ]]; then
-             echo "Found Express value"
-           fi
-          else if [[ express_dependencies==*'pip:flask'* ]]; then
-           if [[ -f 'requirements.txt' ]]; then
-             echo "Found flask value"
-           fi  
+          if  grep -q "npm:express" package_names_list.txt ; then
+           echo "Copying Dockerfiles/nodejs/Dockerfile into repository"
+           cp ../../../Dockerfiles/nodejs/Dockerfile . 
+          elif grep -q "pip:flask" package_names_list.txt ; then
+           echo "Copying Dockerfiles/flask/Dockerfile into repository"
+           cp ../../../Dockerfiles/flask/Dockerfile .
           else
             echo "value does not exist!"
           fi
-        with:
-          express_dependencies: ${{ steps.extracting_dependencies.outputs.express_dependencies }}
-          flask_dependencies: ${{ steps.extracting_dependencies.outputs.flask_dependencies }}
+
+          rm package_names_list.txt
+
     outputs:
       current_comment_sha: ${{ env.SHA_VALUE }}
       year: ${{ env.YEAR }}
