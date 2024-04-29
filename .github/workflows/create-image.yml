@@ -93,33 +93,40 @@ jobs:
 
       - name: Get submodule's dependencies
         run: |
-          json_value=$(curl -L \
+          curl -L \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ secrets.DEPENDENCY_GRAPH_TOKEN }}" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
-          https://api.github.com/repos/${{ needs.create_submodule.outputs.user_name }}/${{ needs.create_submodule.outputs.repo_name }}/dependency-graph/sbom)
+          https://api.github.com/repos/${{ needs.create_submodule.outputs.user_name }}/${{ needs.create_submodule.outputs.repo_name }}/dependency-graph/sbom >> dependencies.json
 
-          echo ${json_value}
-
-          echo "JSON_VALUE=$(echo ${json_value} )"  >> $GITHUB_ENV
+          cat dependencies.json
 
       - name: Look for express dependencies
+      - id: extracting_dependencies
         run: |
-          echo ${{ env.JSON_VALUE }}
+          jq '.sbom.packages' depends.json >> packages.json
+          express_dependencies=$(jq '.[] | .name' packages.json | grep "npm:express") >> $GITHUB_OUTPUT
+          flask_dependencies=$(jq '.[] | .name' packages.json | grep "pip:flask") >> $GITHUB_OUTPUT
 
-          echo "EXPRESS_VALUE=$( echo ${{ env.JSON_VALUE }} | jq '.externalRefs[] | select(.referenceLocator | test("pkg:npm/express")) | .referenceLocator')" >> $GITHUB_ENV
-
-          echo ${{ env.EXPRESS_VALUE }}
+          echo ${express_dependencies}
+          echo ${flask_dependencies}
 
       - name: Check if the JSON file was created successfully
         run: |
-          if [[ test(${{ env.EXPRESS_VALUE }}) ]]; then
+          if [[ express_dependencies==*'npm:express'* ]]; then
            if [[ -f 'package.json' ]]; then
              echo "Found Express value"
-           fi 
+           fi
+          else if [[ express_dependencies==*'pip:flask'* ]]; then
+           if [[ -f 'requirements.txt' ]]; then
+             echo "Found flask value"
+           fi  
           else
             echo "value does not exist!"
           fi
+        with:
+          express_dependencies: ${{ steps.extracting_dependencies.outputs.express_dependencies }}
+          flask_dependencies: ${{ steps.extracting_dependencies.outputs.flask_dependencies }}
     outputs:
       current_comment_sha: ${{ env.SHA_VALUE }}
       year: ${{ env.YEAR }}
