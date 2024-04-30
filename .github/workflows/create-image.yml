@@ -173,7 +173,7 @@ jobs:
         run: |
           cd ./submissions-${{ needs.get_repository_dependencies.outputs.year }}/${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}
 
-          SHA_VALUE="$(git submodule status ./${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}} | awk '{print $1}')"
+          SHA_VALUE="$(git submodule status ./${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}} | awk '{print $1}')"
 
           echo "SHA_VALUE=$SHA_VALUE" >> "$GITHUB_OUTPUT"
 
