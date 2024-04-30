@@ -184,8 +184,10 @@ jobs:
 
           cd ./${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}
 
-          user_name_lower_case= ${ ${{ needs.get_repository_dependencies.outputs.user_name }} ,,}
-          repo_name_lower_case= ${ ${{ needs.get_repository_dependencies.outputs.repo_name }} ,, }
+          user_name=${{ needs.get_repository_dependencies.outputs.user_name }}
+          repo_name=${{ needs.get_repository_dependencies.outputs.repo_name }}
+          user_name_lower_case=$(echo "$user_name" | tr '[:upper:]' '[:lower:]')
+          repo_name_lower_case=$(echo "$repo_name" | tr '[:upper:]' '[:lower:]')
 
           echo ${user_name_lower_case}
           echo ${repo_name_lower_case}
