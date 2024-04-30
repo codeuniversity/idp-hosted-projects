@@ -81,6 +81,12 @@ jobs:
       - name: Pull the changes made in the repository.
         run: git pull --recurse-submodules
 
+      - name: Update the submodule to contain the latest SHA
+        run: |
+          cd ./submissions-${{ needs.create_submodule.outputs.year }}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
+
+          git submodule update --init --recursive
+
       - name: Prepare the outputs for the next job
         run: |
           echo "YEAR=$(date '+%Y')" >> $GITHUB_ENV
