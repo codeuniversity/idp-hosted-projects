@@ -165,10 +165,10 @@ jobs:
           access_token_scopes: https://www.googleapis.com/auth/cloud-platform
           id_token_include_email: false
 
-      # - name: Set up Google Cloud SDK
-      #   uses: google-github-actions/setup-gcloud@v2
-      #   with:
-      #     project_id: code-idp
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: code-idp
 
       - name: Setup Authentication to Docker repository
         run: gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://europe-west10-docker.pkg.dev
