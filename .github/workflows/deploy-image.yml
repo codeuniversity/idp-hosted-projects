@@ -1,0 +1,112 @@
+name: "deploy-repository"
+
+on:
+  # Trigger a specific workflow run on demand without need for a code push/pull request
+  workflow_dispatch:
+    inputs:
+      is_update:
+        description: "If a new helm deployment has to be made"
+        required: true
+      user_name:
+        description: "Username of the hosted project"
+        required: true
+      name:
+        description: "Name of the folder"
+        required: true
+      year:
+        description: "Year of submission"
+        required: true
+      image:
+        description: "image name"
+        required: true
+
+jobs:
+  create-or-update-values-file:
+    permissions:
+      contents: "write"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - id: values file
+        name: Create values files
+        env:
+          YEAR: ${{ github.event.inputs.year }}
+          FOLDER_NAME: ${{ github.event.inputs.name }}
+          IMAGE_NAME: ${{ github.event.inputs.image }}
+          USER_NAME: ${{ github.event.inputs.user_name }}
+        run: |
+          export YEAR=${{ github.event.inputs.year }}
+          export FOLDER_NAME=${{ github.event.inputs.name }}
+          export IMAGE_NAME=${{ github.event.inputs.image }}
+          export USER_NAME=${{ github.event.inputs.user_name }}
+
+          echo $YEAR
+          echo $FOLDER_NAME
+
+          if [ -d submissions-$YEAR/$FOLDER_NAME ]; then
+
+            cd ./submissions-$YEAR/$FOLDER_NAME
+
+            git config --global user.name github-actions
+            git config --global user.email github-actions@github.com
+
+
+            export HOST=$USER_NAME.idp.laurinnotemann.dev
+
+            cat <<EOF >values.yml 
+            host: $HOST
+            image: $IMAGE_NAME
+            name: $USER_NAME
+            EOF
+
+            git add values.yml
+            git commit -m "Added or updated values.yml file for ${FOLDER_NAME}"
+            git push
+
+            echo "STATUS=$(echo 'success')" >> $GITHUB_ENV
+
+          else
+            echo "Submodule does not exist, terminating github actions"
+            echo "STATUS=$(echo 'failure')" >> $GITHUB_ENV
+
+          fi
+    outputs:
+      status: ${{ env.STATUS }}
+
+  deploy-with-helm:
+    needs: create-or-update-values-file
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    if: needs.create-or-update-values-file.status == "success"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: set the kubernetes context
+        uses: azure/k8s-set-context@v3
+        with:
+          method: service-account
+          k8s-url: ${{ secrets.KUBE_SERVER_URL }}
+          k8s-secret: ${{ secrets.KUBE_SERVICE_ACC_SECRET }}
+      - uses: azure/setup-helm@v4.2.0
+        id: install helm
+        with:
+           version: v3.13.3
+      - id: helm deploy
+        env:
+          YEAR: ${{ github.event.inputs.year }}
+          FOLDER_NAME: ${{ github.event.inputs.name }}
+          IMAGE_NAME: ${{ github.event.inputs.image }}
+          USER_NAME: ${{ github.event.inputs.user_name }}
+        name: Deploy with Helm
+        run: |
+          if [ "${{ github.event.inputs.is_update }}" == "false" ]; then
+            helm install $USER_NAME ./codeIdpChart  -f submissions-$YEAR/$FOLDER_NAME/test-values.yml -n test-deploy
+          else
+            helm upgrade $USER_NAME ./codeIdpChart  -f submissions-$YEAR/$FOLDER_NAME/test-values.yml -n test-deploy
+          fi
