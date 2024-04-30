@@ -10,7 +10,7 @@ on:
       user_name:
         description: "Username of the hosted project"
         required: true
-      name:
+      repo_name:
         description: "Name of the folder"
         required: true
       year:
@@ -35,7 +35,7 @@ jobs:
         name: Create values files
         env:
           YEAR: ${{ github.event.inputs.year }}
-          FOLDER_NAME: ${{ github.event.inputs.name }}
+          FOLDER_NAME: ${{ github.event.inputs.user_name }}-${{ github.event.inputs.repo_name }}
           IMAGE_NAME: ${{ github.event.inputs.image }}
           USER_NAME: ${{ github.event.inputs.user_name }}
         run: |
@@ -97,7 +97,7 @@ jobs:
       - id: helm-deploy
         env:
           YEAR: ${{ github.event.inputs.year }}
-          FOLDER_NAME: ${{ github.event.inputs.name }}
+          FOLDER_NAME: ${{ github.event.inputs.user_name }}-${{ github.event.inputs.repo_name }}
           IMAGE_NAME: ${{ github.event.inputs.image }}
           USER_NAME: ${{ github.event.inputs.user_name }}
         name: Deploy with Helm
