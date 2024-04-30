@@ -96,8 +96,8 @@ jobs:
         name: Prepare the outputs for the next job
         run: |
           YEAR="$(date '+%Y')"
-          USER_NAME='$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)'
-          REPO_NAME='$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)'
+          USER_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)
+          REPO_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)
           SHA_VALUE="$(git submodule status | awk '{print $1}')"
 
           echo "year: ${YEAR}"
