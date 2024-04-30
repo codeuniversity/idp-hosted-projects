@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       is_update:
-        description: "If a new helm deployment has to be made"
+        description: "Is it an update or a new deployment (either 'false' or 'true')"
         required: true
       user_name:
         description: "Username of the hosted project"
