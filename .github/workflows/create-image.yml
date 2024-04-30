@@ -101,7 +101,6 @@ jobs:
           if grep -q "npm:express" package_names_list.txt ; then
             echo "Found express dependency"
             DEPENDENCY_RESULT=$(echo "npm:express")
-            echo ${DEPENDENCY_RESULT}
           elif grep -q "pip:flask" package_names_list.txt ; then
             echo "Found flask dependency"
             DEPENDENCY_RESULT=$(echo "pip:flask")
@@ -114,7 +113,7 @@ jobs:
           rm package_names_list.txt
 
     outputs:
-      dependency_result: ${{ steps.output_values.outputs.DEPENDENCY_RESULT }}
+      dependency_result: ${{ steps.dependencies_extraction_result.outputs.DEPENDENCY_RESULT }}
       year: ${{ needs.create_submodule.outputs.year }}
       user_name: ${{ needs.create_submodule.outputs.user_name }}
       repo_name: ${{ needs.create_submodule.outputs.repo_name }}
