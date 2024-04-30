@@ -127,6 +127,7 @@ jobs:
     needs: get_repository_dependencies
     permissions:
       contents: "write"
+      id-token: write
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -147,14 +148,54 @@ jobs:
 
           cd ./${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}
 
-          if  [ needs.get_repository_dependencies.outputs.dependency_result == "npm:express" ] ; then
+          if  [ ${{ needs.get_repository_dependencies.outputs.dependency_result }} == "npm:express" ] ; then
            echo "Copying Dockerfiles/nodejs/Dockerfile into repository"
            cp ../../../Dockerfiles/nodejs/Dockerfile . 
-          elif [ needs.get_repository_dependencies.outputs.dependency_result == "pip:flask" ] ; then
+          elif [ ${{ needs.get_repository_dependencies.outputs.dependency_result }} == "pip:flask" ] ; then
            echo "Copying Dockerfiles/flask/Dockerfile into repository"
            cp ../../../Dockerfiles/flask/Dockerfile .
           else
             echo "value does not exist!"
           fi
 
+      - id: "auth"
+        name: "Authenticate to Google Cloud"
+        uses: "google-github-actions/auth@v0.4.0"
+        with:
+          workload_identity_provider: "projects/1006240973223/locations/global/workloadIdentityPools/docker-image-workflow-pool/providers/Github"
+          service_account: "github-actions-magic@my-project.iam.gserviceaccount.com"
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: code-idp
+
+      - name: Setup Authentication to Docker repository
+        run: gcloud auth configure-docker europe-west10-docker.pkg.dev
+
+      - id: build-docker-image
+        name: build and push docker image for the student's submodule
+        run: |
+          cd ./submissions-${{ needs.get_repository_dependencies.outputs.year }}/${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}
+
+          SHA_VALUE="$(git submodule status ./${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}} | awk '{print $1}')"
+
+          echo "SHA_VALUE=$SHA_VALUE" >> "$GITHUB_OUTPUT"
+
+          cd ./${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}
+
+          if [ -f ./Dockerfile ]; then
+              docker build -t europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}
+              
+              docker tag europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}} europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}:${SHA_VALUE}
+
+              docker push europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}:${SHA_VALUE}
+
+              echo "Docker image pushed"
+          fi
+    outputs:
+      current_commit_value: ${{ steps.build-docker-image.outputs.SHA_VALUE }}
+      year: ${{ needs.get_repository_dependencies.outputs.year }}
+      user_name: ${{ needs.get_repository_dependencies.outputs.user_name }}
+      repo_name: ${{ needs.get_repository_dependencies.outputs.repo_name }}
 # need to add export DOCKER_BUILDKIT=1 before building python docker image
