@@ -89,14 +89,14 @@ jobs:
       - id: output_values
         name: Prepare the outputs for the next job
         run: |
-          cd ./submissions-${{ needs.create_submodule.outputs.year }}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
+          cd ./submissions-${{ needs.create_submodule.outputs.year }}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
 
           git submodule update --init --recursive
 
           YEAR="$(date '+%Y')"
           USER_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)
           REPO_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)
-          SHA_VALUE="$(git submodule status | awk '{print $1}')"
+          SHA_VALUE="$(git submodule status ./${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}} | awk '{print $1}')"
 
           echo "year: ${YEAR}"
           echo "user_name: ${USER_NAME}"
