@@ -90,6 +90,8 @@ jobs:
       - id: output_values
         name: Prepare the outputs for the next job
         run: |
+          cd ./submissions-${{ needs.create_submodule.outputs.year }}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
+
           YEAR="$(date '+%Y')"
           USER_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)
           REPO_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)
@@ -139,7 +141,7 @@ jobs:
           rm package_names_list.txt
 
     outputs:
-      current_comment_sha: ${{ steps.output_values.outputs.SHA_VALUE }}
+      current_commit_sha: ${{ steps.output_values.outputs.SHA_VALUE }}
       year: ${{ steps.output_values.outputs.YEAR }}
       user_name: ${{ steps.output_values.outputs.USER_NAME }}
       repo_name: ${{ steps.output_values.outputs.REPO_NAME }}
