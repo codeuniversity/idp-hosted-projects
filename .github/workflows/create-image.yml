@@ -138,11 +138,11 @@ jobs:
         run: |
           git pull --recurse-submodules
 
-          cd ./submissions-${{ needs.create_submodule.outputs.year }}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
+          cd ./submissions-${{ needs.get_repository_dependencies.outputs.year }}/${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}
 
           git submodule update --init --recursive
 
-          cd ./${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
+          cd ./${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}
 
           if  [ needs.get_repository_dependencies.outputs.dependency_result == "npm:express" ] ; then
            echo "Copying Dockerfiles/nodejs/Dockerfile into repository"
