@@ -106,6 +106,7 @@ jobs:
           if grep -q "npm:express" package_names_list.txt ; then
             echo "Found express dependency"
             DEPENDENCY_RESULT=$(echo "npm:express")
+            echo ${DEPENDENCY_RESULT}
           elif grep -q "pip:flask" package_names_list.txt ; then
             echo "Found flask dependency"
             DEPENDENCY_RESULT=$(echo "pip:flask")
@@ -185,7 +186,7 @@ jobs:
           cd ./${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}
 
           if [ -f ./Dockerfile ]; then
-              docker build -t europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}
+              docker build -t europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}} .
               
               docker tag europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}} europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}:${SHA_VALUE}
 
