@@ -30,7 +30,7 @@ jobs:
         shell: bash
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - id: create-values
         name: Create values files
         env:
@@ -39,14 +39,6 @@ jobs:
           IMAGE_NAME: ${{ github.event.inputs.image }}
           USER_NAME: ${{ github.event.inputs.user_name }}
         run: |
-          export YEAR=${{ github.event.inputs.year }}
-          export FOLDER_NAME=${{ github.event.inputs.name }}
-          export IMAGE_NAME=${{ github.event.inputs.image }}
-          export USER_NAME=${{ github.event.inputs.user_name }}
-
-          echo $YEAR
-          echo $FOLDER_NAME
-
           if [ -d submissions-$YEAR/$FOLDER_NAME ]; then
 
             cd ./submissions-$YEAR/$FOLDER_NAME
@@ -61,11 +53,16 @@ jobs:
             host: $HOST
             image: $IMAGE_NAME
             name: $USER_NAME
-            EOF
+          EOF
 
             git add values.yml
-            git commit -m "Added or updated values.yml file for ${FOLDER_NAME}"
-            git push
+
+            if git diff --staged --quiet; then
+              echo "No changes to commit."
+            else
+              git commit -m "Added or updated values.yml file for ${FOLDER_NAME}"
+              git push
+            fi
 
             echo "STATUS=$(echo 'success')" >> $GITHUB_ENV
 
@@ -83,10 +80,10 @@ jobs:
     defaults:
       run:
         shell: bash
-    if: needs.create-or-update-values-file.status == "success"
+    if: needs.create-or-update-values-file.outputs.status == 'success'
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: set the kubernetes context
         uses: azure/k8s-set-context@v3
         with:
@@ -105,8 +102,9 @@ jobs:
           USER_NAME: ${{ github.event.inputs.user_name }}
         name: Deploy with Helm
         run: |
+          git pull
           if [ "${{ github.event.inputs.is_update }}" == "false" ]; then
-            helm install $USER_NAME ./codeIdpChart  -f submissions-$YEAR/$FOLDER_NAME/test-values.yml -n test-deploy
+            helm install $USER_NAME ./codeIdpChart  -f submissions-$YEAR/$FOLDER_NAME/values.yml -n test-deploy
           else
-            helm upgrade $USER_NAME ./codeIdpChart  -f submissions-$YEAR/$FOLDER_NAME/test-values.yml -n test-deploy
+            helm upgrade $USER_NAME ./codeIdpChart  -f submissions-$YEAR/$FOLDER_NAME/values.yml -n test-deploy
           fi
