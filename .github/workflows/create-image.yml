@@ -116,7 +116,7 @@ jobs:
       dependency_result: ${{ steps.output_values.outputs.DEPENDENCY_RESULT }}
       year: ${{ needs.create_submodule.outputs.year }}
       user_name: ${{ needs.create_submodule.outputs.user_name }}
-      repo_name: ${{ needs.create_submodule.repo_name }}
+      repo_name: ${{ needs.create_submodule.outputs.repo_name }}
 
   create_docker_images:
     needs: get_repository_dependencies
