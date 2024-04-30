@@ -179,12 +179,18 @@ jobs:
 
           cd ./${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}
 
+          user_name_lower_case= ${ ${{ needs.get_repository_dependencies.outputs.user_name }} ,,}
+          repo_name_lower_case= ${ ${{ needs.get_repository_dependencies.outputs.repo_name }} ,, }
+
+          echo ${user_name_lower_case}
+          echo ${repo_name_lower_case}
+
           if [ -f ./Dockerfile ]; then
               docker build -t europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}} .
-              
-              docker tag europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}} europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}:${SHA_VALUE}
 
-              docker push europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}:${SHA_VALUE}
+              docker tag europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${user_name_lower_case}-${repo_name_lower_case} europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${user_name_lower_case}-${repo_name_lower_case}:${SHA_VALUE}
+
+              docker push europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${user_name_lower_case}-${repo_name_lower_case}:${SHA_VALUE}
 
               echo "Docker image pushed"
           fi
