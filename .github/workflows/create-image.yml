@@ -87,12 +87,13 @@ jobs:
 
           git submodule update --init --recursive
 
-      - name: Prepare the outputs for the next job
+      - id: output_values
+        name: Prepare the outputs for the next job
         run: |
-          echo "YEAR=$(date '+%Y')" >> $GITHUB_ENV
-          echo "USER_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)" >> $GITHUB_ENV
-          echo "REPO_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)" >> $GITHUB_ENV
-          echo "SHA_VALUE=$(git submodule status | awk '{print $1}')" >> $GITHUB_ENV
+          echo "YEAR=$(date '+%Y')" >> $GITHUB_OUTPUT
+          echo "USER_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)" >> $GITHUB_OUTPUT
+          echo "REPO_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)" >> $GITHUB_OUTPUT
+          echo "SHA_VALUE=$(git submodule status | awk '{print $1}')" >> $GITHUB_OUTPUT
 
       - id: extracting_dependencies
         name: Get submodule's dependencies
@@ -128,8 +129,8 @@ jobs:
           rm package_names_list.txt
 
     outputs:
-      current_comment_sha: ${{ env.SHA_VALUE }}
-      year: ${{ env.YEAR }}
-      user_name: ${{ env.USER_NAME }}
-      repo_name: ${{ env.REPO_NAME }}
+      current_comment_sha: ${{ steps.output_values.outputs.SHA_VALUE }}
+      year: ${{ steps.output_values.outputs.YEAR }}
+      user_name: ${{ steps.output_values.outputs.USER_NAME }}
+      repo_name: ${{ steps.output_values.outputs.REPO_NAME }}
 # need to add export DOCKER_BUILDKIT=1 before building python docker image
