@@ -81,33 +81,8 @@ jobs:
       - name: Pull the changes made in the repository.
         run: git pull --recurse-submodules
 
-      - id: output_values
-        name: Prepare the outputs for the next job
+      - name: Get submodule's dependencies
         run: |
-          cd ./submissions-${{ needs.create_submodule.outputs.year }}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
-
-          git submodule update --init --recursive
-
-          YEAR="$(date '+%Y')"
-          USER_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)
-          REPO_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)
-          SHA_VALUE="$(git submodule status ./${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}} | awk '{print $1}')"
-
-          echo "year: ${YEAR}"
-          echo "user_name: ${USER_NAME}"
-          echo "repo_name: ${REPO_NAME}"
-          echo "sha_value: ${SHA_VALUE}"
-
-          echo "YEAR=$YEAR" >> "$GITHUB_OUTPUT"
-          echo "USER_NAME=$USER_NAME" >> "$GITHUB_OUTPUT"
-          echo "REPO_NAME=$REPO_NAME" >> "$GITHUB_OUTPUT"
-          echo "SHA_VALUE=$SHA_VALUE" >> "$GITHUB_OUTPUT"
-
-      - id: extracting_dependencies
-        name: Get submodule's dependencies
-        run: |
-          cd ./submissions-${{ needs.create_submodule.outputs.year }}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
-
           curl -L \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ secrets.DEPENDENCY_GRAPH_TOKEN }}" \
@@ -120,25 +95,58 @@ jobs:
 
           rm extracted_dependencies.json extracted_packages.json
 
-      - name: Copy the docker file based on the repository dependencies
+      - id: dependencies_extraction_result
+        name: Provide the result of dependencies extraction to the next job
         run: |
-          cd ./submissions-${{ needs.create_submodule.outputs.year }}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
+          if grep -q "npm:express" package_names_list.txt ; then
+            echo "Found express dependency"
+            DEPENDENCY_RESULT=$(echo "npm:express")
+          elif grep -q "pip:flask" package_names_list.txt ; then
+            echo "Found flask dependency"
+            DEPENDENCY_RESULT=$(echo "pip:flask")
+          else
+            echo "value does not exist!"
+            DEPENDENCY_RESULT="failed"
+          fi
 
-          if  grep -q "npm:express" package_names_list.txt ; then
+          echo "DEPENDENCY_RESULT=$DEPENDENCY_RESULT" >> "$GITHUB_OUTPUT"
+          rm package_names_list.txt
+
+    outputs:
+      dependency_result: ${{ steps.output_values.outputs.DEPENDENCY_RESULT }}
+      year: ${{ needs.create_submodule.outputs.year }}
+      user_name: ${{ needs.create_submodule.outputs.user_name }}
+      repo_name: ${{ needs.create_submodule.repo_name }}
+
+  create_docker_images:
+    needs: get_repository_dependencies
+    permissions:
+      contents: "write"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    if: needs.get_repository_dependencies.outputs.dependency_result != 'failed'
+    steps:
+      - name: Copy Docker image into student's submodule
+        run: |
+          git pull --recurse-submodules
+
+          cd ./submissions-${{ needs.create_submodule.outputs.year }}/${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
+
+          git submodule update --init --recursive
+
+          cd ./${{ needs.create_submodule.outputs.user_name }}-${{ needs.create_submodule.outputs.repo_name}}
+
+          if  [ needs.get_repository_dependencies.outputs.dependency_result == "npm:express" ] ; then
            echo "Copying Dockerfiles/nodejs/Dockerfile into repository"
            cp ../../../Dockerfiles/nodejs/Dockerfile . 
-          elif grep -q "pip:flask" package_names_list.txt ; then
+          elif [ needs.get_repository_dependencies.outputs.dependency_result == "pip:flask" ] ; then
            echo "Copying Dockerfiles/flask/Dockerfile into repository"
            cp ../../../Dockerfiles/flask/Dockerfile .
           else
             echo "value does not exist!"
           fi
 
-          rm package_names_list.txt
-
-    outputs:
-      current_commit_sha: ${{ steps.output_values.outputs.SHA_VALUE }}
-      year: ${{ steps.output_values.outputs.YEAR }}
-      user_name: ${{ steps.output_values.outputs.USER_NAME }}
-      repo_name: ${{ steps.output_values.outputs.REPO_NAME }}
 # need to add export DOCKER_BUILDKIT=1 before building python docker image
