@@ -31,7 +31,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - id: values file
+      - id: create-values
         name: Create values files
         env:
           YEAR: ${{ github.event.inputs.year }}
@@ -94,10 +94,10 @@ jobs:
           k8s-url: ${{ secrets.KUBE_SERVER_URL }}
           k8s-secret: ${{ secrets.KUBE_SERVICE_ACC_SECRET }}
       - uses: azure/setup-helm@v4.2.0
-        id: install helm
+        id: install-helm
         with:
            version: v3.13.3
-      - id: helm deploy
+      - id: helm-deploy
         env:
           YEAR: ${{ github.event.inputs.year }}
           FOLDER_NAME: ${{ github.event.inputs.name }}
