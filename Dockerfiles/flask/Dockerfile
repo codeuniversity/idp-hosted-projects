@@ -8,7 +8,6 @@ RUN python -m venv /usr/app/venv
 ENV PATH="/usr/app/venv/bin:$PATH"
 
 COPY requirements.txt .
-RUN echo "gunicorn==19.9.0" >> requirements.txt
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
 	      build-essential gcc && pip install gunicorn && \ 
