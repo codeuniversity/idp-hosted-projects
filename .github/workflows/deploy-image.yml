@@ -1,7 +1,7 @@
 name: "deploy-repository"
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       is_update:
         description: "Is it an update or a new deployment (either 'false' or 'true')"
@@ -92,7 +92,7 @@ jobs:
       - uses: azure/setup-helm@v4.2.0
         id: install-helm
         with:
-           version: v3.13.3
+          version: v3.13.3
       - id: helm-deploy
         env:
           YEAR: ${{ github.event.inputs.year }}
@@ -107,4 +107,3 @@ jobs:
           else
             helm upgrade $USER_NAME ./codeIdpChart  -f submissions-$YEAR/$FOLDER_NAME/values.yml -n test-deploy
           fi
-
