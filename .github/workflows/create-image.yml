@@ -211,10 +211,12 @@ jobs:
       image_name: ${{ steps.build-docker-image.outputs.IMAGE_NAME }}
 
   trigger_deployment:
-    uses: codeuniversity/idp-hosted-projects/.github/workflows/deploy-image.yml@main
+
+    uses: ./.github/workflows/deploy-image.yml
+    needs: create_docker_images
     with:
       is_update: "false"
-      user_name: ${{ jobs.create_docker_images.outputs.user_name }}
-      repo_name: ${{ jobs.create_docker_images.outputs.repo_name }}
-      year: ${{ jobs.create_docker_images.outputs.year }}
-      image: ${{ jobs.create_docker_images.outputs.image_name }}
+      user_name: ${{ needs.create_docker_images.outputs.user_name }}
+      repo_name: ${{ needs.create_docker_images.outputs.repo_name }}
+      year: ${{ needs.create_docker_images.outputs.year }}
+      image: ${{ needs.create_docker_images.outputs.image_name }}
