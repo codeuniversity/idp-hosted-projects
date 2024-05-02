@@ -225,6 +225,13 @@ jobs:
 
     if: needs.create_docker_images.outputs.status == 'success'
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Copy files
+        working-directory: ${{ env.WORK_DIR }}/local_checkout
+        run: cp -r .github "$GITHUB_WORKSPACE/"
+
       - name: Invoke Server Workflow
         uses: ./.github/workflows/deploy-image.yml
         with:
