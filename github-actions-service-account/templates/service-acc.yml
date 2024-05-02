@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: github-actions-account
+  namespace: {{ .Release.namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: github-actions-role
+  namespace: {{ .Release.namespace }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - pods/exec
+      - services
+      - secrets
+    verbs:
+      - create
+      - get
+      - list
+      - patch
+      - update
+      - delete
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+    verbs:
+      - create
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - networking.k8s.io 
+    resources:
+      - ingresses
+    verbs:
+      - create
+      - get
+      - list
+      - patch
+      - update
+      - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: github-actions-rolebinding
+  namespace: {{ .Release.namespace }}
+subjects:
+- kind: ServiceAccount
+  name: github-actions-account
+  namespace: {{ .Release.namespace }}
+roleRef:
+  kind: Role
+  name: github-actions-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: github-actions-token
+  namespace: {{ .Release.namespace }}
+  annotations:
+    kubernetes.io/service-account.name: github-actions-account
+type: kubernetes.io/service-account-token

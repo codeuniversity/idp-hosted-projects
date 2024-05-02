@@ -1,14 +1,235 @@
 name: "initial-image-build-workflow"
 
 on:
-  workflow_dispatch: # Put here!!
+  workflow_dispatch:
+    inputs:
+      githubRepo:
+        description: "Link of public github repo to deploy"
+        required: true
 
 jobs:
-  build:
+  create_submodule:
+    permissions:
+      contents: "write"
+
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v3
 
-      - name: Run a one-line script
-        run: echo Hello, world!
+      - id: create_student_submodule
+        name: Add student's repo as a submodule
+        run: |
+          echo "YEAR=$(date '+%Y')" >> $GITHUB_ENV
+          echo "USER_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)" >> $GITHUB_ENV
+          echo "REPO_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)" >> $GITHUB_ENV
+
+          year=$(date '+%Y')
+          user_name=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)
+          repo_name=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)
+
+          if [ ! -d submissions-${year} ]; then
+            mkdir submissions-${year}
+          fi
+
+          if [ ! -d submissions-${year}/${user_name}-${repo_name} ]; then
+            echo "Adding ${{ github.event.inputs.githubRepo }} to ./submissions-${year}/${user_name}-${repo_name}/${user_name}-${repo_name} as a submodule"
+
+            git config --global user.name github-actions
+            git config --global user.email github-actions@github.com
+
+            cd ./submissions-${year}
+            mkdir ${user_name}-${repo_name}
+            cd ./${user_name}-${repo_name}
+
+            git submodule add ${{ github.event.inputs.githubRepo }} ./${user_name}-${repo_name}
+            git commit -m "Added ${user_name}-${repo_name} as a submodule by github-actions"
+            git push
+
+            echo "STATUS=$(echo 'success')" >> $GITHUB_ENV
+          else
+            echo "Submodule already exists, terminating github actions"
+            echo "STATUS=$(echo 'failure')" >> $GITHUB_ENV
+
+          fi
+
+    outputs:
+      status: ${{ env.STATUS }}
+      year: ${{ env.YEAR }}
+      user_name: ${{ env.USER_NAME }}
+      repo_name: ${{ env.REPO_NAME }}
+
+  get_repository_dependencies:
+    needs: create_submodule
+    permissions:
+      contents: "write"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    if: needs.create_submodule.outputs.status == 'success'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Pull the changes made in the repository.
+        run: git pull --recurse-submodules
+
+      - name: Get submodule's dependencies
+        run: |
+          curl -L \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ secrets.DEPENDENCY_GRAPH_TOKEN }}" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          https://api.github.com/repos/${{ needs.create_submodule.outputs.user_name }}/${{ needs.create_submodule.outputs.repo_name }}/dependency-graph/sbom >> extracted_dependencies.json
+
+          jq '.sbom.packages' extracted_dependencies.json >> extracted_packages.json
+
+          jq ".[] | .name" extracted_packages.json >> package_names_list.txt  
+
+          rm extracted_dependencies.json extracted_packages.json
+
+      - id: dependencies_extraction_result
+        name: Provide the result of dependencies extraction to the next job
+        run: |
+          if grep -q "npm:express" package_names_list.txt ; then
+            echo "Found express dependency"
+            DEPENDENCY_RESULT=$(echo "npm:express")
+          elif grep -q "pip:flask" package_names_list.txt ; then
+            echo "Found flask dependency"
+            DEPENDENCY_RESULT=$(echo "pip:flask")
+          else
+            echo "value does not exist!"
+            DEPENDENCY_RESULT="failed"
+          fi
+
+          echo "DEPENDENCY_RESULT=$DEPENDENCY_RESULT" >> "$GITHUB_OUTPUT"
+          rm package_names_list.txt
+
+    outputs:
+      dependency_result: ${{ steps.dependencies_extraction_result.outputs.DEPENDENCY_RESULT }}
+      year: ${{ needs.create_submodule.outputs.year }}
+      user_name: ${{ needs.create_submodule.outputs.user_name }}
+      repo_name: ${{ needs.create_submodule.outputs.repo_name }}
+
+  create_docker_images:
+    needs: get_repository_dependencies
+    permissions:
+      contents: "write"
+      id-token: "write"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    if: needs.get_repository_dependencies.outputs.dependency_result != 'failed'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Copy Docker image into student's submodule
+        run: |
+          git pull --recurse-submodules
+
+          cd ./submissions-${{ needs.get_repository_dependencies.outputs.year }}/${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}
+
+          git submodule update --init --recursive
+
+          cd ./${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}
+
+          if  [ ${{ needs.get_repository_dependencies.outputs.dependency_result }} == "npm:express" ] ; then
+           echo "Copying Dockerfiles/nodejs/Dockerfile into repository"
+           cp ../../../Dockerfiles/nodejs/Dockerfile . 
+          elif [ ${{ needs.get_repository_dependencies.outputs.dependency_result }} == "pip:flask" ] ; then
+           echo "Copying Dockerfiles/flask/Dockerfile into repository"
+           cp ../../../Dockerfiles/flask/Dockerfile .
+
+           export DOCKER_BUILDKIT=1 # or configure in daemon.json
+           export COMPOSE_DOCKER_CLI_BUILD=1
+          else
+            echo "value does not exist!"
+          fi
+
+      - id: "auth"
+        name: "Authenticate to Google Cloud"
+        uses: "google-github-actions/auth@v2"
+        with:
+          workload_identity_provider: "projects/1006240973223/locations/global/workloadIdentityPools/docker-image-workflow-pool/providers/github-actions-provider"
+          service_account: "github-actions-magic@code-idp.iam.gserviceaccount.com"
+          access_token_lifetime: 300s
+          create_credentials_file: true
+          cleanup_credentials: true
+          access_token_scopes: https://www.googleapis.com/auth/cloud-platform
+          id_token_include_email: false
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: code-idp
+
+      - name: Setup Authentication to Docker repository
+        run: gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://europe-west10-docker.pkg.dev
+
+      - id: build-docker-image
+        name: build and push docker image for the student's submodule
+        run: |
+          cd ./submissions-${{ needs.get_repository_dependencies.outputs.year }}/${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}
+
+          SHA_VALUE="$(git submodule status ./${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}} | awk '{print $1}')"
+
+          cd ./${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}
+
+          user_name=${{ needs.get_repository_dependencies.outputs.user_name }}
+          repo_name=${{ needs.get_repository_dependencies.outputs.repo_name }}
+          user_name_lower_case=$(echo "$user_name" | tr '[:upper:]' '[:lower:]')
+          repo_name_lower_case=$(echo "$repo_name" | tr '[:upper:]' '[:lower:]')
+
+          echo ${user_name_lower_case}
+          echo ${repo_name_lower_case}
+
+          if [ -f ./Dockerfile ]; then
+              docker build -t europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${user_name_lower_case}-${repo_name_lower_case}:${SHA_VALUE} .
+
+              docker push europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${user_name_lower_case}-${repo_name_lower_case}:${SHA_VALUE}
+
+              echo "Docker image pushed"
+
+              echo "STATUS=$(echo 'success')" >> $GITHUB_ENV
+
+              IMAGE_NAME=$(echo "europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${user_name_lower_case}-${repo_name_lower_case}:${SHA_VALUE}")
+
+              echo "IMAGE_NAME=$IMAGE_NAME" >> "$GITHUB_OUTPUT"
+          else
+              echo "STATUS=$(echo 'failure')" >> $GITHUB_ENV
+          fi
+    outputs:
+      status: ${{ env.STATUS }}
+      year: ${{ needs.get_repository_dependencies.outputs.year }}
+      user_name: ${{ needs.get_repository_dependencies.outputs.user_name }}
+      repo_name: ${{ needs.get_repository_dependencies.outputs.repo_name }}
+      image_name: ${{ steps.build-docker-image.outputs.IMAGE_NAME }}
+
+  trigger_deployment:
+    needs: create_docker_images
+    permissions:
+      contents: "write"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    if: needs.create_docker_images.outputs.status == 'success'
+    steps:
+      - name: Invoke Server Workflow
+        uses: ./.github/workflows/deploy-image.yml
+        with:
+          is_update: "false"
+          user_name: ${{ needs.create_docker_images.outputs.user_name }}
+          repo_name: ${{ needs.create_docker_images.outputs.repo_name }}
+          year: ${{ needs.create_docker_images.outputs.year }}
+          image: ${{ needs.create_docker_images.outputs.image_name }}
