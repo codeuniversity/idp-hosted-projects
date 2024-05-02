@@ -211,6 +211,7 @@ jobs:
       image_name: ${{ steps.build-docker-image.outputs.IMAGE_NAME }}
 
   trigger_deployment:
+
     uses: ./.github/workflows/deploy-image.yml
     needs: create_docker_images
     with:
