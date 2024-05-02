@@ -229,10 +229,9 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Copy files
-        working-directory: ${{ env.WORK_DIR }}/local_checkout
-        run: cp -r .github "$GITHUB_WORKSPACE/"
+        run: cp -r .github .
 
-      - name: Invoke Server Workflow
+      - name: Invoke deployment Workflow
         uses: ./.github/workflows/deploy-image.yml
         with:
           is_update: "false"

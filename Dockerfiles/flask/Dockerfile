@@ -11,7 +11,7 @@ COPY requirements.txt .
 RUN echo "gunicorn==19.9.0" >> requirements.txt
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-	      build-essential gcc && sudo apt-get install gunicorn3 && \ 
+	      build-essential gcc && apt-get install gunicorn3 --auto-approve && \ 
           pip install -r requirements.txt
 
 # ------------------------ Production Build -------------------------------
