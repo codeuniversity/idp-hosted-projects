@@ -8,10 +8,10 @@ RUN python -m venv /usr/app/venv
 ENV PATH="/usr/app/venv/bin:$PATH"
 
 COPY requirements.txt .
-RUN echo "gunicorn==20.0.4" >> requirements.txt
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-	      build-essential gcc && pip install -r requirements.txt
+	      build-essential gcc && pip install gunicorn && \ 
+          pip install -r requirements.txt
 
 # ------------------------ Production Build -------------------------------
 FROM base
