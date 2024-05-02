@@ -6,18 +6,23 @@ on:
       is_update:
         description: "Is it an update or a new deployment (either 'false' or 'true')"
         required: true
+        type: string
       user_name:
         description: "Username of the hosted project"
         required: true
+        type: string
       repo_name:
         description: "Name of the folder"
         required: true
+        type: string
       year:
         description: "Year of submission"
         required: true
+        type: string
       image:
         description: "image name"
         required: true
+        type: string
 
 jobs:
   create-or-update-values-file:
