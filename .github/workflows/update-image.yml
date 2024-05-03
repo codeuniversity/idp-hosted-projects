@@ -39,9 +39,9 @@ jobs:
 
             git pull --recurse-submodules
 
-            cd ./submissions-${year}/${user-name}-${repo-name}
+            cd ./submissions-${year}/${user_name}-${repo_name}
 
-            SHA_VALUE="$(git submodule status ./${user-name}-${repo-name} | awk '{print $1}')"
+            SHA_VALUE="$(git submodule status ./${user_name}-${repo_name} | awk '{print $1}')"
 
             first-letter=${echo SHA_VALUE:0:1}
 
@@ -51,7 +51,7 @@ jobs:
 
             git submodule update --init --recursive
 
-            NEW_SHA_VALUE="$(git submodule status ./${user-name}-${repo-name} | awk '{print $1}')"
+            NEW_SHA_VALUE="$(git submodule status ./${user_name}-${repo_name} | awk '{print $1}')"
 
             if [[ NEW_SHA_VALUE == SHA_VALUE ]]; then
               echo "STATUS=$(echo 'failure')" >> $GITHUB_ENV
