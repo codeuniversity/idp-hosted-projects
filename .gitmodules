@@ -16,3 +16,6 @@
 [submodule "submissions-2024/OskarKuech-Spring_2024_Oskar_Kuech/OskarKuech-Spring_2024_Oskar_Kuech"]
 	path = submissions-2024/OskarKuech-Spring_2024_Oskar_Kuech/OskarKuech-Spring_2024_Oskar_Kuech
 	url = https://github.com/OskarKuech/Spring_2024_Oskar_Kuech
+[submodule "submissions-2024/MennaTullahTaha-FortiChat/MennaTullahTaha-FortiChat"]
+	path = submissions-2024/MennaTullahTaha-FortiChat/MennaTullahTaha-FortiChat
+	url = https://github.com/MennaTullahTaha/FortiChat
