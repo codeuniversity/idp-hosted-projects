@@ -8,7 +8,7 @@ on:
         required: true
 
 jobs:
-  create_submodule:
+  create_student_submodule:
     permissions:
       contents: "write"
 
@@ -74,10 +74,10 @@ jobs:
 
   trigger_deployment:
     uses: ./.github/workflows/deploy-image.yml
-    needs: create_docker_images
+    needs: dockerise-image
     with:
       is_update: "false"
-      user_name: ${{ needs.create_docker_images.outputs.user_name }}
-      repo_name: ${{ needs.create_docker_images.outputs.repo_name }}
-      year: ${{ needs.create_docker_images.outputs.year }}
-      image: ${{ needs.create_docker_images.outputs.image_name }}
+      user_name: ${{ needs.dockerise-image.outputs.user_name }}
+      repo_name: ${{ needs.dockerise-image.outputs.repo_name }}
+      year: ${{ needs.dockerise-image.outputs.year }}
+      image: ${{ needs.dockerise-image.outputs.image_name }}

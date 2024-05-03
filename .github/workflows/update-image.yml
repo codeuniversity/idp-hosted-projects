@@ -1,0 +1,90 @@
+name: "update-image-build-workflow"
+
+on:
+  workflow_dispatch:
+    inputs:
+      githubRepo:
+        description: "Link of public github repo to deploy"
+        required: true
+
+jobs:
+  create_submodule:
+    permissions:
+      contents: "write"
+
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - id: check_if_update_needed
+        name: Add student's repo as a submodule
+        run: |
+          echo "YEAR=$(date '+%Y')" >> $GITHUB_ENV
+          echo "USER_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)" >> $GITHUB_ENV
+          echo "REPO_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)" >> $GITHUB_ENV
+
+          year=$(date '+%Y')
+          user_name=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)
+          repo_name=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)
+
+          if [  -d submissions-${year}/${user_name}-${repo_name} ]; then
+
+            git config --global user.name github-actions
+            git config --global user.email github-actions@github.com
+
+            git pull --recurse-submodules
+
+            cd ./submissions-${year}/${user-name}-${repo-name}
+
+            SHA_VALUE="$(git submodule status ./${user-name}-${repo-name} | awk '{print $1}')"
+
+            first-letter=${echo SHA_VALUE:0:1}
+
+            if [[ first-letter == '-' ]]; then
+            SHA_VALUE="${SHA_VALUE:1}" 
+            fi
+
+            git submodule update --init --recursive
+
+            NEW_SHA_VALUE="$(git submodule status ./${user-name}-${repo-name} | awk '{print $1}')"
+
+            if [[ NEW_SHA_VALUE == SHA_VALUE ]]; then
+              echo "STATUS=$(echo 'failure')" >> $GITHUB_ENV
+            else
+              echo "STATUS=$(echo 'Success')" >> $GITHUB_ENV
+              git commit -m "Updated ${user_name}-${repo_name} submodule by github-actions"
+              git push
+            fi 
+            else
+              echo "Submodule does not exist, terminating update-image github actions, please use create-image.yml"
+              echo "STATUS=$(echo 'failure')" >> $GITHUB_ENV
+          fi
+    outputs:
+      status: ${{ env.STATUS }}
+      year: ${{ env.YEAR }}
+      user_name: ${{ env.USER_NAME }}
+      repo_name: ${{ env.REPO_NAME }}
+
+  dockerise-image:
+    uses: ./.github/workflows/dockerise-image.yml
+    needs: check_if_update_needed
+    with:
+      user_name: ${{ needs.check_if_update_needed.outputs.user_name }}
+      repo_name: ${{ needs.check_if_update_needed.outputs.repo_name }}
+      year: ${{ needs.check_if_update_needed.outputs.year }}
+      submodule_status: ${{ needs.check_if_update_needed.outputs.status }}
+
+  trigger_deployment:
+    uses: ./.github/workflows/deploy-image.yml
+    needs: dockerise-image
+    with:
+      is_update: "true"
+      user_name: ${{ needs.dockerise-image.outputs.user_name }}
+      repo_name: ${{ needs.dockerise-image.outputs.repo_name }}
+      year: ${{ needs.dockerise-image.outputs.year }}
+      image: ${{ needs.dockerise-image.outputs.image_name }}
