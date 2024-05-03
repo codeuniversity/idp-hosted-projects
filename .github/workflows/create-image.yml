@@ -70,7 +70,8 @@ jobs:
       repo_name: ${{ needs.create_student_submodule.outputs.repo_name }}
       year: ${{ needs.create_student_submodule.outputs.year }}
       submodule_status: ${{ needs.create_student_submodule.outputs.status }}
-      token: ${{ secrets.DEPENDENCY_GRAPH_TOKEN }}
+    secrets:
+      DEPENDENCY_GRAPH_TOKEN: ${{ secrets.DEPENDENCY_GRAPH_TOKEN }}
 
   trigger_deployment:
     uses: ./.github/workflows/deploy-image.yml
