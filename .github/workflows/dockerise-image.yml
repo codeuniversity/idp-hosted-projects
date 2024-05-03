@@ -3,31 +3,33 @@ name: "dockerise-image"
 on:
   workflow_call:
     inputs:
-    githubRepo:
-      description: "Link of public github repo to deploy"
-      type: string
-      required: true
-    year:
-      description: "current year"
-      type: string
-      required: true
-    user_name:
-      description: "name of the repisotry owner"
-      type: string
-      required: true
-    repo_name:
-      description: "name of the repository"
-      type: string
-      required: true
+      year:
+        description: "current year"
+        type: string
+        required: true
+      user_name:
+        description: "name of the repisotry owner"
+        type: string
+        required: true
+      repo_name:
+        description: "name of the repository"
+        type: string
+        required: true
+      submodule_status:
+        description: "status of submodule creation"
+        type: string
+        required: true
 
-  jobs:
-    get_repository_dependencies:
+jobs:
+  get_repository_dependencies:
     permissions:
       contents: "write"
     runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash
+
+    if: ${{ github.event.inputs.submodule_status }} == 'success'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -41,7 +43,7 @@ on:
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ secrets.DEPENDENCY_GRAPH_TOKEN }}" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
-          https://api.github.com/repos/"${{ github.event.inputs.user_name }}"/"${{ github.event.inputs.repo_name }}"/dependency-graph/sbom >> extracted_dependencies.json
+          https://api.github.com/repos/${{ github.event.inputs.user_name }}/${{ github.event.inputs.repo_name }}/dependency-graph/sbom >> extracted_dependencies.json
 
           jq '.sbom.packages' extracted_dependencies.json >> extracted_packages.json
 
@@ -68,6 +70,9 @@ on:
 
     outputs:
       dependency_result: ${{ steps.dependencies_extraction_result.outputs.DEPENDENCY_RESULT }}
+      year: ${{ github.event.inputs.year }}
+      user_name: ${{ github.event.inputs.user_name }}
+      repo_name: ${{ github.event.inputs.repo_name }}
 
   create_docker_images:
     needs: get_repository_dependencies
@@ -95,14 +100,14 @@ on:
           cd ./${{ github.event.inputs.user_name }}-${{ github.event.inputs.repo_name }}
 
           if  [ ${{ needs.get_repository_dependencies.outputs.dependency_result }} == "npm:express" ] ; then
-           echo "Copying Dockerfiles/nodejs/Dockerfile into repository"
-           cp ../../../Dockerfiles/nodejs/Dockerfile . 
+          echo "Copying Dockerfiles/nodejs/Dockerfile into repository"
+          cp ../../../Dockerfiles/nodejs/Dockerfile . 
           elif [ ${{ needs.get_repository_dependencies.outputs.dependency_result }} == "pip:flask" ] ; then
-           echo "Copying Dockerfiles/flask/Dockerfile into repository"
-           cp ../../../Dockerfiles/flask/Dockerfile .
+          echo "Copying Dockerfiles/flask/Dockerfile into repository"
+          cp ../../../Dockerfiles/flask/Dockerfile .
 
-           export DOCKER_BUILDKIT=1 # or configure in daemon.json
-           export COMPOSE_DOCKER_CLI_BUILD=1
+          export DOCKER_BUILDKIT=1 # or configure in daemon.json
+          export COMPOSE_DOCKER_CLI_BUILD=1
           else
             echo "value does not exist!"
           fi
@@ -137,7 +142,7 @@ on:
           cd ./${{ github.event.inputs.user_name }}-${{ github.event.inputs.repo_name }}
 
           user_name=${{ github.event.inputs.user_name }}
-          repo_name=${{ github.event.inputs.repo_name  }}
+          repo_name=${{ github.event.inputs.repo_name }}
           user_name_lower_case=$(echo "$user_name" | tr '[:upper:]' '[:lower:]')
           repo_name_lower_case=$(echo "$repo_name" | tr '[:upper:]' '[:lower:]')
 
@@ -159,5 +164,5 @@ on:
     outputs:
       year: ${{ github.event.inputs.year }}
       user_name: ${{ github.event.inputs.user_name }}
-      repo_name: ${{ github.event.inputs.repo_name  }}
+      repo_name: ${{ github.event.inputs.repo_name }}
       image_name: ${{ steps.build-docker-image.outputs.IMAGE_NAME }}
