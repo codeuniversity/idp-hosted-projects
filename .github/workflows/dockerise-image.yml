@@ -29,7 +29,7 @@ jobs:
       run:
         shell: bash
 
-    if: ${{ github.event.inputs.submodule_status }} == 'success'
+    if: ${{ inputs.submodule_status }} == 'success'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -39,11 +39,21 @@ jobs:
 
       - name: Get submodule's dependencies
         run: |
+          year=${{ inputs.year }}
+          user_name=${{ inputs.user_name }}
+          repo_name=${{ inputs.repo_name }}
+
+          echo "YEAR=${year}" >> $GITHUB_ENV
+          echo "USER_NAME=${user_name}" >> $GITHUB_ENV
+          echo "REPO_NAME=${repo_name}" >> $GITHUB_ENV
+
           curl -L \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ secrets.DEPENDENCY_GRAPH_TOKEN }}" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
-          https://api.github.com/repos/${{ github.event.inputs.user_name }}/${{ github.event.inputs.repo_name }}/dependency-graph/sbom >> extracted_dependencies.json
+          https://api.github.com/repos/${{ inputs.user_name }}/${{ inputs.repo_name }}/dependency-graph/sbom >> extracted_dependencies.json
+
+          cat extracted_dependencies.json
 
           jq '.sbom.packages' extracted_dependencies.json >> extracted_packages.json
 
@@ -70,9 +80,9 @@ jobs:
 
     outputs:
       dependency_result: ${{ steps.dependencies_extraction_result.outputs.DEPENDENCY_RESULT }}
-      year: ${{ github.event.inputs.year }}
-      user_name: ${{ github.event.inputs.user_name }}
-      repo_name: ${{ github.event.inputs.repo_name }}
+      year: ${{ env.YEAR }}
+      user_name: ${{ env.USER_NAME }}
+      repo_name: ${{ env.REPO_NAME }}
 
   create_docker_images:
     needs: get_repository_dependencies
@@ -93,21 +103,21 @@ jobs:
         run: |
           git pull --recurse-submodules
 
-          cd ./submissions-${{ github.event.inputs.year }}/${{ github.event.inputs.user_name }}-${{ github.event.inputs.repo_name }}
+          cd ./submissions-${{ needs.get_repository_dependencies.outputs.year }}/${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}
 
           git submodule update --init --recursive
 
-          cd ./${{ github.event.inputs.user_name }}-${{ github.event.inputs.repo_name }}
+          cd ./${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}
 
           if  [ ${{ needs.get_repository_dependencies.outputs.dependency_result }} == "npm:express" ] ; then
-          echo "Copying Dockerfiles/nodejs/Dockerfile into repository"
-          cp ../../../Dockerfiles/nodejs/Dockerfile . 
+           echo "Copying Dockerfiles/nodejs/Dockerfile into repository"
+           cp ../../../Dockerfiles/nodejs/Dockerfile . 
           elif [ ${{ needs.get_repository_dependencies.outputs.dependency_result }} == "pip:flask" ] ; then
-          echo "Copying Dockerfiles/flask/Dockerfile into repository"
-          cp ../../../Dockerfiles/flask/Dockerfile .
+           echo "Copying Dockerfiles/flask/Dockerfile into repository"
+           cp ../../../Dockerfiles/flask/Dockerfile .
 
-          export DOCKER_BUILDKIT=1 # or configure in daemon.json
-          export COMPOSE_DOCKER_CLI_BUILD=1
+           export DOCKER_BUILDKIT=1 # or configure in daemon.json
+           export COMPOSE_DOCKER_CLI_BUILD=1
           else
             echo "value does not exist!"
           fi
@@ -135,14 +145,14 @@ jobs:
       - id: build-docker-image
         name: build and push docker image for the student's submodule
         run: |
-          cd ./submissions-${{ github.event.inputs.year }}/${{ github.event.inputs.user_name }}-${{ github.event.inputs.repo_name }}
+          cd ./submissions-${{ needs.get_repository_dependencies.outputs.year }}/${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}
 
-          SHA_VALUE="$(git submodule status ./${{ github.event.inputs.user_name }}-${{ github.event.inputs.repo_name }} | awk '{print $1}')"
+          SHA_VALUE="$(git submodule status ./${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}} | awk '{print $1}')"
 
-          cd ./${{ github.event.inputs.user_name }}-${{ github.event.inputs.repo_name }}
+          cd ./${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}
 
-          user_name=${{ github.event.inputs.user_name }}
-          repo_name=${{ github.event.inputs.repo_name }}
+          user_name=${{ needs.get_repository_dependencies.outputs.user_name }}
+          repo_name=${{ needs.get_repository_dependencies.outputs.repo_name }}
           user_name_lower_case=$(echo "$user_name" | tr '[:upper:]' '[:lower:]')
           repo_name_lower_case=$(echo "$repo_name" | tr '[:upper:]' '[:lower:]')
 
@@ -162,7 +172,7 @@ jobs:
           fi
 
     outputs:
-      year: ${{ github.event.inputs.year }}
-      user_name: ${{ github.event.inputs.user_name }}
-      repo_name: ${{ github.event.inputs.repo_name }}
+      year: ${{ needs.get_repository_dependencies.outputs.year }}
+      user_name: ${{ needs.get_repository_dependencies.outputs.user_name }}
+      repo_name: ${{ needs.get_repository_dependencies.outputs.repo_name }}
       image_name: ${{ steps.build-docker-image.outputs.IMAGE_NAME }}

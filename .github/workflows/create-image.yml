@@ -54,7 +54,6 @@ jobs:
           else
             echo "Submodule already exists, terminating github actions"
             echo "STATUS=$(echo 'failure')" >> $GITHUB_ENV
-
           fi
 
     outputs:
