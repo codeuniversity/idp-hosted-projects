@@ -8,7 +8,7 @@ on:
         required: true
 
 jobs:
-  create_submodule:
+  check_if_update_needed:
     permissions:
       contents: "write"
 
