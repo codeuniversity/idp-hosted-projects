@@ -1,4 +1,4 @@
-name: "initial-image-build-workflow"
+name: "update-image-build-workflow"
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ on:
         required: true
 
 jobs:
-  create_student_submodule:
+  create_submodule:
     permissions:
       contents: "write"
 
@@ -21,7 +21,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - id: create_student_submodule
+      - id: check_if_update_needed
         name: Add student's repo as a submodule
         run: |
           echo "YEAR=$(date '+%Y')" >> $GITHUB_ENV
@@ -32,30 +32,38 @@ jobs:
           user_name=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)
           repo_name=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)
 
-          if [ ! -d submissions-${year} ]; then
-            mkdir submissions-${year}
-          fi
-
-          if [ ! -d submissions-${year}/${user_name}-${repo_name} ]; then
-            echo "Adding ${{ github.event.inputs.githubRepo }} to ./submissions-${year}/${user_name}-${repo_name}/${user_name}-${repo_name} as a submodule"
+          if [  -d submissions-${year}/${user_name}-${repo_name} ]; then
 
             git config --global user.name github-actions
             git config --global user.email github-actions@github.com
 
-            cd ./submissions-${year}
-            mkdir ${user_name}-${repo_name}
-            cd ./${user_name}-${repo_name}
+            git pull --recurse-submodules
 
-            git submodule add ${{ github.event.inputs.githubRepo }} ./${user_name}-${repo_name}
-            git commit -m "Added ${user_name}-${repo_name} as a submodule by github-actions"
-            git push
+            cd ./submissions-${year}/${user-name}-${repo-name}
 
-            echo "STATUS=$(echo 'success')" >> $GITHUB_ENV
-          else
-            echo "Submodule already exists, terminating github actions"
-            echo "STATUS=$(echo 'failure')" >> $GITHUB_ENV
+            SHA_VALUE="$(git submodule status ./${user-name}-${repo-name} | awk '{print $1}')"
+
+            first-letter=${echo SHA_VALUE:0:1}
+
+            if [[ first-letter == '-' ]]; then
+            SHA_VALUE="${SHA_VALUE:1}" 
+            fi
+
+            git submodule update --init --recursive
+
+            NEW_SHA_VALUE="$(git submodule status ./${user-name}-${repo-name} | awk '{print $1}')"
+
+            if [[ NEW_SHA_VALUE == SHA_VALUE ]]; then
+              echo "STATUS=$(echo 'failure')" >> $GITHUB_ENV
+            else
+              echo "STATUS=$(echo 'Success')" >> $GITHUB_ENV
+              git commit -m "Updated ${user_name}-${repo_name} submodule by github-actions"
+              git push
+            fi 
+            else
+              echo "Submodule does not exist, terminating update-image github actions, please use create-image.yml"
+              echo "STATUS=$(echo 'failure')" >> $GITHUB_ENV
           fi
-
     outputs:
       status: ${{ env.STATUS }}
       year: ${{ env.YEAR }}
@@ -64,18 +72,18 @@ jobs:
 
   dockerise-image:
     uses: ./.github/workflows/dockerise-image.yml
-    needs: create_student_submodule
+    needs: check_if_update_needed
     with:
-      user_name: ${{ needs.create_student_submodule.outputs.user_name }}
-      repo_name: ${{ needs.create_student_submodule.outputs.repo_name }}
-      year: ${{ needs.create_student_submodule.outputs.year }}
-      submodule_status: ${{ needs.create_student_submodule.outputs.status }}
+      user_name: ${{ needs.check_if_update_needed.outputs.user_name }}
+      repo_name: ${{ needs.check_if_update_needed.outputs.repo_name }}
+      year: ${{ needs.check_if_update_needed.outputs.year }}
+      submodule_status: ${{ needs.check_if_update_needed.outputs.status }}
 
   trigger_deployment:
     uses: ./.github/workflows/deploy-image.yml
     needs: dockerise-image
     with:
-      is_update: "false"
+      is_update: "true"
       user_name: ${{ needs.dockerise-image.outputs.user_name }}
       repo_name: ${{ needs.dockerise-image.outputs.repo_name }}
       year: ${{ needs.dockerise-image.outputs.year }}
