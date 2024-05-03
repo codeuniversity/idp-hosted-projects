@@ -78,7 +78,8 @@ jobs:
       repo_name: ${{ needs.check_if_update_needed.outputs.repo_name }}
       year: ${{ needs.check_if_update_needed.outputs.year }}
       submodule_status: ${{ needs.check_if_update_needed.outputs.status }}
-      token: ${{ secrets.DEPENDENCY_GRAPH_TOKEN }}
+    secrets:
+      DEPENDENCY_GRAPH_TOKEN: ${{ secrets.DEPENDENCY_GRAPH_TOKEN }}
 
   trigger_deployment:
     uses: ./.github/workflows/deploy-image.yml
