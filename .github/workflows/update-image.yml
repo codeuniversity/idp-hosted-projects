@@ -37,7 +37,7 @@ jobs:
             git config --global user.name github-actions
             git config --global user.email github-actions@github.com
 
-            git pull --recurse-submodules
+            git submodule update --init --recursive
 
             cd ./submissions-${year}/${user_name}-${repo_name}
 
@@ -47,7 +47,7 @@ jobs:
               SHA_VALUE=${SHA_VALUE:1}
             fi
 
-            git submodule update --init --recursive
+            git submodule update --init --recursive --remote
 
             NEW_SHA_VALUE="$(git submodule status ./${user_name}-${repo_name} | awk '{print $1}')"
 

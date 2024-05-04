@@ -102,8 +102,6 @@ jobs:
 
       - name: Copy Docker image into student's submodule
         run: |
-          git pull --recurse-submodules
-
           cd ./submissions-${{ needs.get_repository_dependencies.outputs.year }}/${{ needs.get_repository_dependencies.outputs.user_name }}-${{ needs.get_repository_dependencies.outputs.repo_name}}
 
           git submodule update --init --recursive
