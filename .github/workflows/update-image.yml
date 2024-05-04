@@ -45,9 +45,9 @@ jobs:
 
             echo ${SHA_VALUE}
             echo ${SHA_VALUE}:0:1
-            echo ${${SHA_VALUE}:0:1}
+            echo ${SHA_VALUE:0:1}
 
-            first-letter=${${SHA_VALUE}:0:1}
+            first-letter=${SHA_VALUE:0:1}
 
             if [[ first-letter == '-' ]]; then
             SHA_VALUE="${${SHA_VALUE}:1}" 
