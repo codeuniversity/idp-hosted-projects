@@ -21,7 +21,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - id: check_if_update_needed
+      - id: check_current_state_of_submodule
         name: Add student's repo as a submodule
         run: |
           echo "YEAR=$(date '+%Y')" >> $GITHUB_ENV
@@ -37,32 +37,33 @@ jobs:
             git config --global user.name github-actions
             git config --global user.email github-actions@github.com
 
-            git pull --recurse-submodules
+            git submodule update --init --recursive
 
             cd ./submissions-${year}/${user_name}-${repo_name}
 
             SHA_VALUE="$(git submodule status ./${user_name}-${repo_name} | awk '{print $1}')"
 
-            first-letter=${echo SHA_VALUE:0:1}
-
-            if [[ first-letter == '-' ]]; then
-            SHA_VALUE="${SHA_VALUE:1}" 
+            if [[ ${SHA_VALUE:0:1} == '-' ]]; then
+              SHA_VALUE=${SHA_VALUE:1}
             fi
 
-            git submodule update --init --recursive
+            git submodule update --init --recursive --remote
 
             NEW_SHA_VALUE="$(git submodule status ./${user_name}-${repo_name} | awk '{print $1}')"
 
-            if [[ NEW_SHA_VALUE == SHA_VALUE ]]; then
+            if [[ ${NEW_SHA_VALUE} == ${SHA_VALUE} ]]; then
               echo "STATUS=$(echo 'failure')" >> $GITHUB_ENV
+              echo "No update is needed, skipping the rest of jobs."
             else
-              echo "STATUS=$(echo 'Success')" >> $GITHUB_ENV
+              echo "STATUS=$(echo 'success')" >> $GITHUB_ENV
+              git add .
               git commit -m "Updated ${user_name}-${repo_name} submodule by github-actions"
               git push
-            fi 
-            else
-              echo "Submodule does not exist, terminating update-image github actions, please use create-image.yml"
-              echo "STATUS=$(echo 'failure')" >> $GITHUB_ENV
+              echo "Pushed the updated submodule to the repository."
+            fi
+          else
+            echo "Submodule does not exist, terminating update-image github actions, please use create-image.yml"
+            echo "STATUS=$(echo 'failure')" >> $GITHUB_ENV  
           fi
     outputs:
       status: ${{ env.STATUS }}
