@@ -21,7 +21,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - id: check_if_update_needed
+      - id: check_current_state_of_submodule
         name: Add student's repo as a submodule
         run: |
           echo "YEAR=$(date '+%Y')" >> $GITHUB_ENV
@@ -43,31 +43,26 @@ jobs:
 
             SHA_VALUE="$(git submodule status ./${user_name}-${repo_name} | awk '{print $1}')"
 
-            echo ${SHA_VALUE:0:1}
-
-            first-letter='$(echo ${SHA_VALUE:0:1})'
-
-            echo ${first-letter}
-
-            if [[ first-letter == '-' ]]; then
-            SHA_VALUE='${SHA_VALUE:1}'
-            echo ${SHA_VALUE}
+            if [[ ${SHA_VALUE:0:1} == '-' ]]; then
+              SHA_VALUE=${SHA_VALUE:1}
             fi
 
             git submodule update --init --recursive
 
             NEW_SHA_VALUE="$(git submodule status ./${user_name}-${repo_name} | awk '{print $1}')"
 
-            if [[ NEW_SHA_VALUE == SHA_VALUE ]]; then
+            if [[ ${NEW_SHA_VALUE} == ${SHA_VALUE} ]]; then
               echo "STATUS=$(echo 'failure')" >> $GITHUB_ENV
+              echo "No update is needed, skipping the rest of jobs."
             else
-              echo "STATUS=$(echo 'Success')" >> $GITHUB_ENV
+              echo "STATUS=$(echo 'success')" >> $GITHUB_ENV
               git commit -m "Updated ${user_name}-${repo_name} submodule by github-actions"
               git push
-            fi 
-            else
-              echo "Submodule does not exist, terminating update-image github actions, please use create-image.yml"
-              echo "STATUS=$(echo 'failure')" >> $GITHUB_ENV
+              echo "Pushed the updated submodule to the repository."
+            fi
+          else
+            echo "Submodule does not exist, terminating update-image github actions, please use create-image.yml"
+            echo "STATUS=$(echo 'failure')" >> $GITHUB_ENV  
           fi
     outputs:
       status: ${{ env.STATUS }}

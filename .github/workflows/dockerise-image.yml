@@ -32,7 +32,7 @@ jobs:
       run:
         shell: bash
 
-    if: ${{ inputs.submodule_status }} == 'success'
+    if: inputs.submodule_status == 'success'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
