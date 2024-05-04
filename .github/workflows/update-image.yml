@@ -45,7 +45,7 @@ jobs:
 
             echo ${SHA_VALUE:0:1}
 
-            first-letter=$(echo ${SHA_VALUE:0:1})
+            first-letter='$(echo ${SHA_VALUE:0:1})'
 
             echo ${first-letter}
 
