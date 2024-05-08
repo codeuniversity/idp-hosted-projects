@@ -1,0 +1,39 @@
+name: "Create new GKE cluster"
+
+on:
+  workflow_dispatch:
+    
+jobs:
+  create-cluster:
+    name: "Terraform create GKE cluster"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./gke-terraform-config
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.8.2"
+      - name: Terrafrom add secrets to var file
+      - name: Terraform fmt
+        id: fmt
+        run: terraform fmt -check
+        continue-on-error: true
+      
+      - name: Terraform Init
+        id: init
+        run: terraform init
+      
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+      
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color
+      - name: Terraform apply
+        id: apply
+        run: terraform apply -no-color -auto-approve
