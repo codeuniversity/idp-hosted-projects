@@ -1,0 +1,16 @@
+name: "Create new GKE cluster"
+
+on:
+  workflow_dispatch:
+    
+jobs:
+  create-cluster:
+    name: "Terraform create GKE cluster"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./gke-terraform-config
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
