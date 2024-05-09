@@ -1,14 +1,14 @@
-name: "Create new GKE cluster"
+name: "Delete the GKE cluster"
 
 on:
   workflow_dispatch:
     
 jobs:
-  create-cluster:
+  delete-cluster:
     permissions:
       id-token: write
       contents: read
-    name: "Terraform create GKE cluster"
+    name: "Terraform delete GKE cluster"
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -40,6 +40,6 @@ jobs:
         id: init
         run: terraform init
       
-      - name: Terraform apply
+      - name: Terraform delete
         id: apply
         run: terraform destroy -no-color -auto-approve -refresh=false
