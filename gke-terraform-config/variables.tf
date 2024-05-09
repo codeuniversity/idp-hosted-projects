@@ -3,11 +3,13 @@ variable "project_id" {
 }
 
 variable "region" {
-  type = string
+  type    = string
+  default = "europe-west1"
 }
 
 variable "zones" {
-  type = list(string)
+  type    = list(string)
+  default = ["europe-west1-b"]
 }
 
 variable "initial_node_count" {
@@ -31,17 +33,17 @@ variable "namedotcom_token" {
 }
 
 variable "idp_domain_name" {
-  type = string
+  type        = string
   description = "The domain name (e.g. code.berlin)"
 }
 
 variable "idp_domain_host" {
-  type = string
+  type        = string
   description = "The Subdomain, needs to be a wildcard (e.g. '*.idp' which means test.idp.code.berlin is a valid domain)"
-  default = "*.idp"
+  default     = "*.idp"
 }
 
 variable "certificate_issuer_email" {
-  type = string
+  type        = string
   description = "This is the email that is used to create the LetsEncrypt certificate"
 }
