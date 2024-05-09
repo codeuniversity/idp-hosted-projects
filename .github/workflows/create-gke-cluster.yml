@@ -5,6 +5,9 @@ on:
     
 jobs:
   create-cluster:
+    permissions:
+      id-token: write
+      contents: read
     name: "Terraform create GKE cluster"
     runs-on: ubuntu-latest
     defaults:
@@ -14,6 +17,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          create_credentials_file: true
+          workload_identity_provider: 'projects/1006240973223/locations/global/workloadIdentityPools/gha-create-gke-cluster/providers/github-actions'
+          service_account: 'terraform-gke@code-idp.iam.gserviceaccount.com'
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.8.2"
