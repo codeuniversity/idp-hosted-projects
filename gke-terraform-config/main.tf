@@ -20,11 +20,15 @@ terraform {
       source  = "lexfrei/namedotcom"
       version = "1.3.1"
     }
+    github = {
+      source  = "integrations/github"
+      version = "6.2.1"
+    }
   }
   backend "gcs" {
-   bucket  = "code-idp-terraform-tfstate"
-   prefix  = "terraform/state"
- }
+    bucket = "code-idp-terraform-tfstate"
+    prefix = "terraform/state"
+  }
 }
 
 # google_client_config and kubernetes provider must be explicitly specified like the following.
@@ -214,4 +218,101 @@ resource "namedotcom_record" "idp_domain" {
 
   host   = var.idp_domain_host
   answer = data.kubernetes_service.traefik_service.status[0].load_balancer[0].ingress[0].ip
+}
+
+resource "kubernetes_service_account" "github_actions_account" {
+  depends_on = [module.gke, kubernetes_namespace.submissions_namespace]
+  metadata {
+    name      = "github-actions-account"
+    namespace = kubernetes_namespace.submissions_namespace.metadata[0].name
+  }
+}
+
+resource "kubernetes_role" "github_actions_role" {
+  depends_on = [kubernetes_service_account.github_actions_account]
+  metadata {
+    name      = "github-actions-role"
+    namespace = kubernetes_namespace.submissions_namespace.metadata[0].name
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["pods", "pods/exec", "services", "secrets"]
+    verbs      = ["create", "get", "list", "patch", "update", "delete"]
+  }
+
+  rule {
+    api_groups = ["apps"]
+    resources  = ["deployments"]
+    verbs      = ["create", "get", "list", "patch", "update", "watch"]
+  }
+
+  rule {
+    api_groups = ["networking.k8s.io"]
+    resources  = ["ingresses"]
+    verbs      = ["create", "get", "list", "patch", "update", "delete"]
+  }
+}
+
+resource "kubernetes_role_binding" "github_actions_rolebinding" {
+  depends_on = [kubernetes_role.github_actions_role]
+  metadata {
+    name      = "github-actions-rolebinding"
+    namespace = kubernetes_namespace.submissions_namespace.metadata[0].name
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "Role"
+    name      = kubernetes_role.github_actions_role.metadata[0].name
+  }
+
+  subject {
+    kind      = "ServiceAccount"
+    name      = kubernetes_service_account.github_actions_account.metadata[0].name
+    namespace = kubernetes_namespace.submissions_namespace.metadata[0].name
+  }
+}
+
+resource "kubernetes_secret" "github_actions_token" {
+  depends_on = [kubernetes_role.github_actions_role]
+  metadata {
+    name      = "github-actions-token"
+    namespace = kubernetes_namespace.submissions_namespace.metadata[0].name
+    annotations = {
+      "kubernetes.io/service-account.name" = kubernetes_service_account.github_actions_account.metadata[0].name
+    }
+  }
+
+  type                           = "kubernetes.io/service-account-token"
+  wait_for_service_account_token = true
+}
+
+data "kubernetes_secret" "github_actions_token_data" {
+  metadata {
+    name      = kubernetes_secret.github_actions_token.metadata[0].name
+    namespace = kubernetes_namespace.submissions_namespace.metadata[0].name
+  }
+}
+
+resource "github_actions_secret" "kube_service_acc_secret" {
+  repository      = "idp-hosted-projects"
+  secret_name     = "KUBE_SERVICE_ACC_SECRET"
+  plaintext_value = data.kubernetes_secret.github_actions_token_data
+}
+
+resource "github_actions_secret" "kube_server_url" {
+  repository      = "idp-hosted-projects"
+  secret_name     = "KUBE_SERVER_URL"
+  plaintext_value = "https://${module.gke.endpoint}"
+}
+
+output "kube_secret" {
+  value       = data.kubernetes_secret.github_actions_token_data
+  description = "secret of gha service account"
+}
+
+output "kube_server" {
+  value       = "https://${module.gke.endpoint}"
+  description = "url of gke endpoint"
 }

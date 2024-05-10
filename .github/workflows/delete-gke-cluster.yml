@@ -41,5 +41,5 @@ jobs:
         run: terraform init
       
       - name: Terraform delete
-        id: apply
-        run: terraform destroy -no-color -auto-approve
+        id: destroy
+        run: terraform destroy -no-color -auto-approve -refresh=false
