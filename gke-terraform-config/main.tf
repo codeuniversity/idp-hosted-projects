@@ -298,7 +298,7 @@ data "kubernetes_secret" "github_actions_token_data" {
 resource "github_actions_secret" "kube_service_acc_secret" {
   repository      = "idp-hosted-projects"
   secret_name     = "KUBE_SERVICE_ACC_SECRET"
-  plaintext_value = data.kubernetes_secret.github_actions_token_data
+  plaintext_value = yamlencode(data.kubernetes_secret.github_actions_token_data)
 }
 
 resource "github_actions_secret" "kube_server_url" {
@@ -308,11 +308,13 @@ resource "github_actions_secret" "kube_server_url" {
 }
 
 output "kube_secret" {
-  value       = data.kubernetes_secret.github_actions_token_data
+  value       = yamlencode(data.kubernetes_secret.github_actions_token_data)
   description = "secret of gha service account"
+  sensitive   = true
 }
 
 output "kube_server" {
   value       = "https://${module.gke.endpoint}"
   description = "url of gke endpoint"
+  sensitive   = true
 }
