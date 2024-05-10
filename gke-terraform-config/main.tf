@@ -21,6 +21,10 @@ terraform {
       version = "1.3.1"
     }
   }
+  backend "gcs" {
+   bucket  = "code-idp-terraform-tfstate"
+   prefix  = "terraform/state"
+ }
 }
 
 # google_client_config and kubernetes provider must be explicitly specified like the following.
