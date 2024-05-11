@@ -295,10 +295,14 @@ data "kubernetes_secret" "github_actions_token_data" {
   }
 }
 
+data "github_actions_public_key" "idp_public_key" {
+  repository = "idp-hosted-projects"
+}
+
 resource "github_actions_secret" "kube_service_acc_secret" {
   repository      = "idp-hosted-projects"
   secret_name     = "KUBE_SERVICE_ACC_SECRET"
-  plaintext_value = yamlencode(data.kubernetes_secret.github_actions_token_data)
+  plaintext_value = data.kubernetes_secret.github_actions_token_data.data.token
 }
 
 resource "github_actions_secret" "kube_server_url" {
@@ -307,14 +311,8 @@ resource "github_actions_secret" "kube_server_url" {
   plaintext_value = "https://${module.gke.endpoint}"
 }
 
-output "kube_secret" {
-  value       = yamlencode(data.kubernetes_secret.github_actions_token_data)
-  description = "secret of gha service account"
-  sensitive   = true
-}
-
-output "kube_server" {
-  value       = "https://${module.gke.endpoint}"
-  description = "url of gke endpoint"
-  sensitive   = true
+resource "github_actions_secret" "kube_server_url" {
+  repository      = "idp-hosted-projects"
+  secret_name     = "KUBE_CA_CERTIFICATE"
+  plaintext_value = module.gke.ca_certificate
 }
