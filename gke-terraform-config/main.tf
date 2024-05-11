@@ -311,7 +311,7 @@ resource "github_actions_secret" "kube_server_url" {
   plaintext_value = "https://${module.gke.endpoint}"
 }
 
-resource "github_actions_secret" "kube_server_url" {
+resource "github_actions_secret" "kube_ca_certificate" {
   repository      = "idp-hosted-projects"
   secret_name     = "KUBE_CA_CERTIFICATE"
   plaintext_value = module.gke.ca_certificate
