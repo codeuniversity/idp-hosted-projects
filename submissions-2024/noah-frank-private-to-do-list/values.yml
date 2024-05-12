@@ -1,3 +1,0 @@
-  host: noah-frank.idp.laurinnotemann.dev
-  image: europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/noah-frank-private-to-do-list:e73e87132ab6554b19a6b215d7627ea63c93fba3
-  name: noah-frank
