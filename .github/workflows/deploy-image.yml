@@ -23,6 +23,11 @@ on:
         description: "image name"
         required: true
         type: string
+    secrets:
+      KUBE_SERVER_URL:
+        required: true
+      KUBE_SERVICE_ACC_SECRET:
+        required: true
 
 jobs:
   create-or-update-values-file:
@@ -94,7 +99,7 @@ jobs:
         uses: azure/k8s-set-context@v3
         with:
           method: service-account
-          k8s-url: ${{ secrets.TEST_KUBE_SERVER_URL }}
+          k8s-url: ${{ secrets.KUBE_SERVER_URL }}
           k8s-secret: ${{ secrets.KUBE_SERVICE_ACC_SECRET }}
       - uses: azure/setup-helm@v4.2.0
         id: install-helm
