@@ -35,6 +35,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Pull the changes made in the repository.
+        run: git pull --recurse-submodules
       - id: create-values
         name: Create values files
         env:
