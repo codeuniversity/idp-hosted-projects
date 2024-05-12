@@ -288,31 +288,31 @@ resource "kubernetes_secret" "github_actions_token" {
   wait_for_service_account_token = true
 }
 
-data "kubernetes_secret" "github_actions_token_data" {
-  metadata {
-    name      = kubernetes_secret.github_actions_token.metadata[0].name
-    namespace = kubernetes_namespace.submissions_namespace.metadata[0].name
-  }
-}
-
-data "github_actions_public_key" "idp_public_key" {
-  repository = "idp-hosted-projects"
-}
-
-resource "github_actions_secret" "kube_service_acc_secret" {
-  repository      = "idp-hosted-projects"
-  secret_name     = "KUBE_SERVICE_ACC_SECRET"
-  plaintext_value = data.kubernetes_secret.github_actions_token_data.data.token
-}
-
-resource "github_actions_secret" "kube_server_url" {
-  repository      = "idp-hosted-projects"
-  secret_name     = "KUBE_SERVER_URL"
-  plaintext_value = "https://${module.gke.endpoint}"
-}
-
-resource "github_actions_secret" "kube_ca_certificate" {
-  repository      = "idp-hosted-projects"
-  secret_name     = "KUBE_CA_CERTIFICATE"
-  plaintext_value = module.gke.ca_certificate
-}
+#data "kubernetes_secret" "github_actions_token_data" {
+#  metadata {
+#    name      = kubernetes_secret.github_actions_token.metadata[0].name
+#    namespace = kubernetes_namespace.submissions_namespace.metadata[0].name
+#  }
+#}
+#
+#data "github_actions_public_key" "idp_public_key" {
+#  repository = "idp-hosted-projects"
+#}
+#
+#resource "github_actions_secret" "kube_service_acc_secret" {
+#  repository      = "idp-hosted-projects"
+#  secret_name     = "KUBE_SERVICE_ACC_SECRET"
+#  plaintext_value = data.kubernetes_secret.github_actions_token_data.data.token
+#}
+#
+#resource "github_actions_secret" "kube_server_url" {
+#  repository      = "idp-hosted-projects"
+#  secret_name     = "KUBE_SERVER_URL"
+#  plaintext_value = "https://${module.gke.endpoint}"
+#}
+#
+#resource "github_actions_secret" "kube_ca_certificate" {
+#  repository      = "idp-hosted-projects"
+#  secret_name     = "KUBE_CA_CERTIFICATE"
+#  plaintext_value = module.gke.ca_certificate
+#}
