@@ -19,7 +19,6 @@ rules:
       - secrets
     verbs:
       - create
-      - watch
       - get
       - list
       - patch
@@ -49,7 +48,7 @@ rules:
       - delete
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+kind: RoleBinding
 metadata:
   name: github-actions-rolebinding
   namespace: { { .Release.namespace } }
