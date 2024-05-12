@@ -1,3 +1,6 @@
 [submodule "submissions-2024/maggieekubat-Recipe/maggieekubat-Recipe"]
 	path = submissions-2024/maggieekubat-Recipe/maggieekubat-Recipe
 	url = https://github.com/maggieekubat/Recipe
+[submodule "submissions-2024/noah-frank-private-to-do-list/noah-frank-private-to-do-list"]
+	path = submissions-2024/noah-frank-private-to-do-list/noah-frank-private-to-do-list
+	url = https://github.com/noah-frank/private-to-do-list
