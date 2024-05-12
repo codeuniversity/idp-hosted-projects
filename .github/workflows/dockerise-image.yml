@@ -22,6 +22,19 @@ on:
     secrets:
       DEPENDENCY_GRAPH_TOKEN:
         required: true
+    outputs:
+      user_name:
+        description: "user_name"
+        value: ${{ jobs.create_docker_images.outputs.user_name }}
+      repo_name:
+        description: "repo_name"
+        value: ${{ jobs.create_docker_images.outputs.repo_name }}
+      year:
+        description: "year"
+        value: ${{ jobs.create_docker_images.outputs.year }}
+      image_name:
+        description: "image_name"
+        value: ${{ jobs.create_docker_images.outputs.image_name }}
 
 jobs:
   get_repository_dependencies:
