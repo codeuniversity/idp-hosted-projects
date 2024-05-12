@@ -38,10 +38,10 @@ jobs:
       - id: create-values
         name: Create values files
         env:
-          YEAR: ${{ github.event.inputs.year }}
-          FOLDER_NAME: ${{ github.event.inputs.user_name }}-${{ github.event.inputs.repo_name }}
-          IMAGE_NAME: ${{ github.event.inputs.image }}
-          USER_NAME: ${{ github.event.inputs.user_name }}
+          YEAR: ${{ inputs.year }}
+          FOLDER_NAME: ${{ inputs.user_name }}-${{ inputs.repo_name }}
+          IMAGE_NAME: ${{ inputs.image }}
+          USER_NAME: ${{ inputs.user_name }}
         run: |
           if [ -d submissions-$YEAR/$FOLDER_NAME ]; then
 
@@ -100,10 +100,10 @@ jobs:
           version: v3.13.3
       - id: helm-deploy
         env:
-          YEAR: ${{ github.event.inputs.year }}
-          FOLDER_NAME: ${{ github.event.inputs.user_name }}-${{ github.event.inputs.repo_name }}
-          IMAGE_NAME: ${{ github.event.inputs.image }}
-          USER_NAME: ${{ github.event.inputs.user_name }}
+          YEAR: ${{ inputs.year }}
+          FOLDER_NAME: ${{ inputs.user_name }}-${{ inputs.repo_name }}
+          IMAGE_NAME: ${{ inputs.image }}
+          USER_NAME: ${{ inputs.user_name }}
         name: Deploy with Helm
         run: |
           git pull
