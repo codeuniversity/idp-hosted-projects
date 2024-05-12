@@ -45,20 +45,20 @@ jobs:
           IMAGE_NAME: ${{ inputs.image }}
           USER_NAME: ${{ inputs.user_name }}
         run: |
-          if [ -d submissions-$YEAR/$FOLDER_NAME ]; then
+          if [ -d submissions-${YEAR}/${FOLDER_NAME} ]; then
 
-            cd ./submissions-$YEAR/$FOLDER_NAME
+            cd ./submissions-${YEAR}/${FOLDER_NAME}
 
             git config --global user.name github-actions
             git config --global user.email github-actions@github.com
 
 
-            export HOST=$USER_NAME.idp.laurinnotemann.dev
+            export HOST=${USER_NAME}.idp.laurinnotemann.dev
 
             cat <<EOF >values.yml 
-            host: $HOST
-            image: $IMAGE_NAME
-            name: $USER_NAME
+            host: ${HOST}
+            image: ${IMAGE_NAME}
+            name: ${USER_NAME}
           EOF
 
             git add values.yml
@@ -109,8 +109,8 @@ jobs:
         name: Deploy with Helm
         run: |
           git pull
-          if [ "${{ github.event.inputs.is_update }}" == "false" ]; then
-            helm install $USER_NAME ./codeIdpChart  -f submissions-$YEAR/$FOLDER_NAME/values.yml -n test-deploy
+          if [ "${{ inputs.is_update }}" == "false" ]; then
+            helm install ${USER_NAME} ./codeIdpChart  -f submissions-${YEAR}/${FOLDER_NAME}/values.yml -n test-deploy
           else
-            helm upgrade $USER_NAME ./codeIdpChart  -f submissions-$YEAR/$FOLDER_NAME/values.yml -n test-deploy
+            helm upgrade ${USER_NAME} ./codeIdpChart  -f submissions-${YEAR}/${FOLDER_NAME}/values.yml -n test-deploy
           fi
