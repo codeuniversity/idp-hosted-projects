@@ -5,12 +5,54 @@ on:
     
 jobs:
   create-cluster:
+    permissions:
+      id-token: write
+      contents: read
     name: "Terraform create GKE cluster"
     runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash
         working-directory: ./gke-terraform-config
+    env:
+      TF_VAR_service_account: gke-nodes@code-idp.iam.gserviceaccount.com
+      TF_VAR_project_id: code-idp
+      TF_VAR_max_node_count: 3
+      TF_VAR_initial_node_count: 1
+      TF_VAR_namedotcom_username: "notemann27" # temporary until we use a different domain
+      TF_VAR_namedotcom_token: ${{secrets.NAMEDOTCOM_TOKEN}} # temporary until we use a different domain
+      TF_VAR_idp_domain_name: "laurinnotemann.dev" # temporary until we use a different domain
+      TF_VAR_certificate_issuer_email: "laurin.notemann@gmail.com" # temporary until we use a different domain
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          create_credentials_file: true
+          workload_identity_provider: 'projects/1006240973223/locations/global/workloadIdentityPools/gha-create-gke-cluster/providers/github-actions'
+          service_account: 'terraform-gke@code-idp.iam.gserviceaccount.com'
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.8.2"
+      - name: Terraform fmt
+        id: fmt
+        run: terraform fmt -check
+        continue-on-error: true
+      
+      - name: Terraform Init
+        id: init
+        run: terraform init
+      
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+      
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color
+
+      - name: Terraform apply
+        id: apply
+        run: terraform apply -no-color -auto-approve

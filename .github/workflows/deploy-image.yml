@@ -3,10 +3,6 @@ name: "deploy-repository"
 on:
   workflow_call:
     inputs:
-      is_update:
-        description: "Is it an update or a new deployment (either 'false' or 'true')"
-        required: true
-        type: string
       user_name:
         description: "Username of the hosted project"
         required: true
@@ -23,6 +19,11 @@ on:
         description: "image name"
         required: true
         type: string
+    secrets:
+      KUBE_SERVER_URL:
+        required: true
+      KUBE_SERVICE_ACC_SECRET:
+        required: true
 
 jobs:
   create-or-update-values-file:
@@ -35,28 +36,30 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Pull the changes made in the repository.
+        run: git pull --recurse-submodules
       - id: create-values
         name: Create values files
         env:
-          YEAR: ${{ github.event.inputs.year }}
-          FOLDER_NAME: ${{ github.event.inputs.user_name }}-${{ github.event.inputs.repo_name }}
-          IMAGE_NAME: ${{ github.event.inputs.image }}
-          USER_NAME: ${{ github.event.inputs.user_name }}
+          YEAR: ${{ inputs.year }}
+          FOLDER_NAME: ${{ inputs.user_name }}-${{ inputs.repo_name }}
+          IMAGE_NAME: ${{ inputs.image }}
+          USER_NAME: ${{ inputs.user_name }}
         run: |
-          if [ -d submissions-$YEAR/$FOLDER_NAME ]; then
+          if [ -d submissions-${YEAR}/${FOLDER_NAME} ]; then
 
-            cd ./submissions-$YEAR/$FOLDER_NAME
+            cd ./submissions-${YEAR}/${FOLDER_NAME}
 
             git config --global user.name github-actions
             git config --global user.email github-actions@github.com
 
 
-            export HOST=$USER_NAME.idp.laurinnotemann.dev
+            export HOST=${USER_NAME}.idp.laurinnotemann.dev
 
             cat <<EOF >values.yml 
-            host: $HOST
-            image: $IMAGE_NAME
-            name: $USER_NAME
+            host: ${HOST}
+            image: ${IMAGE_NAME}
+            name: ${USER_NAME}
           EOF
 
             git add values.yml
@@ -100,15 +103,12 @@ jobs:
           version: v3.13.3
       - id: helm-deploy
         env:
-          YEAR: ${{ github.event.inputs.year }}
-          FOLDER_NAME: ${{ github.event.inputs.user_name }}-${{ github.event.inputs.repo_name }}
-          IMAGE_NAME: ${{ github.event.inputs.image }}
-          USER_NAME: ${{ github.event.inputs.user_name }}
+          YEAR: ${{ inputs.year }}
+          FOLDER_NAME: ${{ inputs.user_name }}-${{ inputs.repo_name }}
+          IMAGE_NAME: ${{ inputs.image }}
+          USER_NAME: ${{ inputs.user_name }}
         name: Deploy with Helm
         run: |
+          user_name_lower_case=$(echo "$USER_NAME" | tr '[:upper:]' '[:lower:]')
           git pull
-          if [ "${{ github.event.inputs.is_update }}" == "false" ]; then
-            helm install $USER_NAME ./codeIdpChart  -f submissions-$YEAR/$FOLDER_NAME/values.yml -n submissions-$YEAR
-          else
-            helm upgrade $USER_NAME ./codeIdpChart  -f submissions-$YEAR/$FOLDER_NAME/values.yml -n submissions-$YEAR 
-          fi
+          helm upgrade -i ${user_name_lower_case} ./codeIdpChart  -f submissions-${YEAR}/${FOLDER_NAME}/values.yml -n submissions-${YEAR}
