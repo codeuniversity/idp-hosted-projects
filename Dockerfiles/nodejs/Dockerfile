@@ -13,6 +13,8 @@ RUN apt-get update \
 # ------------------------ Production Image ---------------------
 FROM base
 
+ARG file_name
+
 WORKDIR /usr/src/app
 
 ENV NODE_ENV production
