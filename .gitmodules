@@ -1,3 +1,6 @@
 [submodule "submissions-2024/lillywallawitsch-wondernest-express/lillywallawitsch-wondernest-express"]
 	path = submissions-2024/lillywallawitsch-wondernest-express/lillywallawitsch-wondernest-express
 	url = https://github.com/lillywallawitsch/Wondernest.Express
+[submodule "submissions-2024/joelheile-code-se19/joelheile-code-se19"]
+	path = submissions-2024/joelheile-code-se19/joelheile-code-se19
+	url = https://github.com/Joelheile/CODE-SE19
