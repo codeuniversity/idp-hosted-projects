@@ -134,6 +134,8 @@ jobs:
              FILE_NAME=$(echo "main.js")
            elif [[ -f ./app.js ]]; then
              FILE_NAME=$(echo "app.js")
+           elif [[ -f ./index.js ]]; then
+             FILE_NAME=$(echo "index.js")
            fi 
 
              echo "FILE_NAME=$FILE_NAME" >> "$GITHUB_OUTPUT"
@@ -185,7 +187,7 @@ jobs:
           echo ${repo_name_lower_case}
 
           if [ -f ./Dockerfile ]; then
-              docker build -t europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${user_name_lower_case}-${repo_name_lower_case}:${SHA_VALUE} . --build-arg file_name=${{ steps.get_file_name.outputs.FILE_NAME }}
+              docker build -t europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${user_name_lower_case}-${repo_name_lower_case}:${SHA_VALUE} --build-arg file_name=${{ steps.get_file_name.outputs.FILE_NAME }} .
 
               docker push europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${user_name_lower_case}-${repo_name_lower_case}:${SHA_VALUE}
 
