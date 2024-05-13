@@ -130,9 +130,9 @@ jobs:
 
            FILE_NAME=$(echo "server.js")
              
-           if [ -f ./main.js ]; then
+           if [[ -f ./main.js ]]; then
              FILE_NAME=$(echo "main.js")
-           elif [-f ./app.js ]; then
+           elif [[ -f ./app.js ]]; then
              FILE_NAME=$(echo "app.js")
            fi 
 
