@@ -15,7 +15,7 @@ FROM base
 
 ARG file_name
 
-ENV FILE_NAME = $file_name
+ENV FILE_NAME = ${file_name}
 
 WORKDIR /usr/src/app
 
