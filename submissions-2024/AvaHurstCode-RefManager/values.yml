@@ -1,0 +1,3 @@
+  host: AvaHurstCode.idp.laurinnotemann.dev
+  image: europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/avahurstcode-refmanager:0940db3b771b54820cc10ea005e33b4f2e75b728
+  name: AvaHurstCode
