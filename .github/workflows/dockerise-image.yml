@@ -19,6 +19,10 @@ on:
         description: "status of submodule creation"
         type: string
         required: true
+      repo_url:
+        description: "student's repo url"
+        type: string
+        required: true
     secrets:
       DEPENDENCY_GRAPH_TOKEN:
         required: true
@@ -55,19 +59,15 @@ jobs:
 
       - name: Get submodule's dependencies
         run: |
-          year=${{ inputs.year }}
-          user_name=${{ inputs.user_name }}
-          repo_name=${{ inputs.repo_name }}
-
-          echo "YEAR=${year}" >> $GITHUB_ENV
-          echo "USER_NAME=${user_name}" >> $GITHUB_ENV
-          echo "REPO_NAME=${repo_name}" >> $GITHUB_ENV
+          year=$(date '+%Y')
+          user_name=$(echo "${{ inputs.repo_url }}" | cut -d'/' -f4)
+          repo_name=$(echo "${{ inputs.repo_url }}" | cut -d'/' -f5)
 
           curl -L \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ secrets.DEPENDENCY_GRAPH_TOKEN }}" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
-          https://api.github.com/repos/${{ inputs.user_name }}/${{ inputs.repo_name }}/dependency-graph/sbom >> extracted_dependencies.json
+          https://api.github.com/repos/${user_name}/${repo_name}/dependency-graph/sbom >> extracted_dependencies.json
 
           jq '.sbom.packages' extracted_dependencies.json >> extracted_packages.json
 
@@ -94,9 +94,9 @@ jobs:
 
     outputs:
       dependency_result: ${{ steps.dependencies_extraction_result.outputs.DEPENDENCY_RESULT }}
-      year: ${{ env.YEAR }}
-      user_name: ${{ env.USER_NAME }}
-      repo_name: ${{ env.REPO_NAME }}
+      year: ${{ inputs.year }}
+      user_name: ${{ inputs.user_name }}
+      repo_name: ${{ inputs.repo_name }}
 
   create_docker_images:
     needs: get_repository_dependencies
@@ -180,20 +180,15 @@ jobs:
 
           user_name=${{ needs.get_repository_dependencies.outputs.user_name }}
           repo_name=${{ needs.get_repository_dependencies.outputs.repo_name }}
-          user_name_lower_case=$(echo "$user_name" | tr '[:upper:]' '[:lower:]')
-          repo_name_lower_case=$(echo "$repo_name" | tr '[:upper:]' '[:lower:]')
-
-          echo ${user_name_lower_case}
-          echo ${repo_name_lower_case}
 
           if [ -f ./Dockerfile ]; then
-              docker build -t europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${user_name_lower_case}-${repo_name_lower_case}:${SHA_VALUE} --build-arg file_name=${{ steps.get_file_name.outputs.FILE_NAME }} .
+              docker build -t europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${user_name}-${repo_name}:${SHA_VALUE} --build-arg file_name=${{ steps.get_file_name.outputs.FILE_NAME }} .
 
-              docker push europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${user_name_lower_case}-${repo_name_lower_case}:${SHA_VALUE}
+              docker push europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${user_name}-${repo_name}:${SHA_VALUE}
 
               echo "Docker image pushed"
 
-              IMAGE_NAME=$(echo "europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${user_name_lower_case}-${repo_name_lower_case}:${SHA_VALUE}")
+              IMAGE_NAME=$(echo "europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${user_name}-${repo_name}:${SHA_VALUE}")
 
               echo "IMAGE_NAME=$IMAGE_NAME" >> "$GITHUB_OUTPUT"
           fi

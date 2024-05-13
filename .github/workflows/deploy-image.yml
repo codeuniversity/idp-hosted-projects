@@ -54,12 +54,12 @@ jobs:
             git config --global user.email github-actions@github.com
 
 
-            export HOST=${USER_NAME}.idp.laurinnotemann.dev
+            export HOST=${FOLDER_NAME}.idp.laurinnotemann.dev
 
             cat <<EOF >values.yml 
             host: ${HOST}
             image: ${IMAGE_NAME}
-            name: ${USER_NAME}
+            name: ${FOLDER_NAME}
           EOF
 
             git add values.yml
@@ -109,6 +109,5 @@ jobs:
           USER_NAME: ${{ inputs.user_name }}
         name: Deploy with Helm
         run: |
-          user_name_lower_case=$(echo "$USER_NAME" | tr '[:upper:]' '[:lower:]')
           git pull
-          helm upgrade -i ${user_name_lower_case} ./codeIdpChart  -f submissions-${YEAR}/${FOLDER_NAME}/values.yml -n submissions-${YEAR}
+          helm upgrade -i ${FOLDER_NAME} ./codeIdpChart  -f submissions-${YEAR}/${FOLDER_NAME}/values.yml -n submissions-${YEAR}

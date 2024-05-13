@@ -24,13 +24,19 @@ jobs:
       - id: create_student_submodule
         name: Add student's repo as a submodule
         run: |
-          echo "YEAR=$(date '+%Y')" >> $GITHUB_ENV
-          echo "USER_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)" >> $GITHUB_ENV
-          echo "REPO_NAME=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)" >> $GITHUB_ENV
-
           year=$(date '+%Y')
-          user_name=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)
-          repo_name=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)
+          initial_user_name=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f4)
+          initial_repo_name=$(echo "${{ github.event.inputs.githubRepo }}" | cut -d'/' -f5)
+
+          user_name_lower_case=$(echo "$initial_user_name" | tr '[:upper:]' '[:lower:]')
+          repo_name_lower_case=$(echo "$initial_repo_name" | tr '[:upper:]' '[:lower:]')
+
+          user_name=$(echo "$user_name_lower_case" | tr '._' '-')
+          repo_name=$(echo "$repo_name_lower_case" | tr '._' '-')
+
+          echo "year=$(date '+%Y')" >> "$GITHUB_OUTPUT"
+          echo "user_name=$user_name" >> "$GITHUB_OUTPUT"
+          echo "repo_name=$repo_name" >> "$GITHUB_OUTPUT"
 
           if [ ! -d submissions-${year} ]; then
             mkdir submissions-${year}
@@ -50,17 +56,17 @@ jobs:
             git commit -m "Added ${user_name}-${repo_name} as a submodule by github-actions"
             git push
 
-            echo "STATUS=$(echo 'success')" >> $GITHUB_ENV
+            echo "STATUS=$(echo 'success')" >> "$GITHUB_OUTPUT"
           else
             echo "Submodule already exists, terminating github actions"
-            echo "STATUS=$(echo 'failure')" >> $GITHUB_ENV
+            echo "STATUS=$(echo 'failure')" >> "$GITHUB_OUTPUT"
           fi
 
     outputs:
-      status: ${{ env.STATUS }}
-      year: ${{ env.YEAR }}
-      user_name: ${{ env.USER_NAME }}
-      repo_name: ${{ env.REPO_NAME }}
+      status: ${{ steps.create_student_submodule.outputs.STATUS }}
+      year: ${{ steps.create_student_submodule.outputs.year}}
+      user_name: ${{ steps.create_student_submodule.outputs.user_name }}
+      repo_name: ${{ steps.create_student_submodule.outputs.repo_name }}
 
   dockerise-image:
     uses: ./.github/workflows/dockerise-image.yml
@@ -70,6 +76,7 @@ jobs:
       repo_name: ${{ needs.create_student_submodule.outputs.repo_name }}
       year: ${{ needs.create_student_submodule.outputs.year }}
       submodule_status: ${{ needs.create_student_submodule.outputs.status }}
+      repo_url: ${{ github.event.inputs.githubRepo }}
     secrets:
       DEPENDENCY_GRAPH_TOKEN: ${{ secrets.DEPENDENCY_GRAPH_TOKEN }}
 
