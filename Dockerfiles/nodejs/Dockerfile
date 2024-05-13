@@ -15,6 +15,8 @@ FROM base
 
 ARG file_name
 
+ENV file_name = ${file_name}
+
 WORKDIR /usr/src/app
 
 ENV NODE_ENV production
