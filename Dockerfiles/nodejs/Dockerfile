@@ -13,6 +13,10 @@ RUN apt-get update \
 # ------------------------ Production Image ---------------------
 FROM base
 
+ARG file_name
+
+ENV FILE_NAME=$file_name
+
 WORKDIR /usr/src/app
 
 ENV NODE_ENV production
@@ -24,4 +28,4 @@ USER node
 COPY --chown=node:node --from=build /usr/src/app/node_modules /usr/src/app/node_modules
 COPY --chown=node:node . /usr/src/app
 
-CMD ["dumb-init", "node", "server.js"]
+CMD dumb-init node $FILE_NAME
