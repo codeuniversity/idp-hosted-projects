@@ -109,6 +109,5 @@ jobs:
           USER_NAME: ${{ inputs.user_name }}
         name: Deploy with Helm
         run: |
-          user_name_lower_case=$(echo "$USER_NAME" | tr '[:upper:]' '[:lower:]')
           git pull
-          helm upgrade -i ${user_name_lower_case} ./codeIdpChart  -f submissions-${YEAR}/${FOLDER_NAME}/values.yml -n submissions-${YEAR}
+          helm upgrade -i ${FOLDER_NAME} ./codeIdpChart  -f submissions-${YEAR}/${FOLDER_NAME}/values.yml -n submissions-${YEAR}

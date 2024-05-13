@@ -31,8 +31,8 @@ jobs:
           user_name_lower_case=$(echo "$initial_user_name" | tr '[:upper:]' '[:lower:]')
           repo_name_lower_case=$(echo "$initial_repo_name" | tr '[:upper:]' '[:lower:]')
 
-          user_name = $(echo "$user_name_lower_case" | tr '_' '-')
-          repo_name = $(echo "$repo_name_lower_case" | tr '_' '-')
+          user_name=$(echo "$user_name_lower_case" | tr '_' '-')
+          repo_name=$(echo "$repo_name_lower_case" | tr '_' '-')
 
           echo "year=$(date '+%Y')" >> "$GITHUB_OUTPUT"
           echo "user_name=$user_name" >> "$GITHUB_OUTPUT"
