@@ -15,7 +15,7 @@ FROM base
 
 ARG file_name
 
-ENV file_name = ${file_name}
+ENV FILE_NAME = ${file_name}
 
 WORKDIR /usr/src/app
 
@@ -28,4 +28,4 @@ USER node
 COPY --chown=node:node --from=build /usr/src/app/node_modules /usr/src/app/node_modules
 COPY --chown=node:node . /usr/src/app
 
-CMD ["dumb-init", "node", "$file_name" ]
+CMD ["dumb-init", "node", "${FILE_NAME}" ]
