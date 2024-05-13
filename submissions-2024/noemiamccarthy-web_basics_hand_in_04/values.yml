@@ -1,0 +1,3 @@
+  host: noemiamccarthy.idp.laurinnotemann.dev
+  image: europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/noemiamccarthy-web_basics_hand_in_04:d59fe176d6615b0178927ed73eeda2ed16e35457
+  name: noemiamccarthy
