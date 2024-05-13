@@ -111,4 +111,4 @@ jobs:
         run: |
           user_name_lower_case=$(echo "$USER_NAME" | tr '[:upper:]' '[:lower:]')
           git pull
-          helm upgrade ${user_name_lower_case} ./codeIdpChart  -f submissions-${YEAR}/${FOLDER_NAME}/values.yml -n submissions-${YEAR}
+          helm upgrade -i ${user_name_lower_case} ./codeIdpChart  -f submissions-${YEAR}/${FOLDER_NAME}/values.yml -n submissions-${YEAR}
