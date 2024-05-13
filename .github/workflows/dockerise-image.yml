@@ -113,7 +113,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Copy Docker image into student's submodule
+      - id: get_file_name
+        name: Copy Docker image into student's submodule
         run: |
           git pull --recurse-submodules
 
@@ -125,7 +126,17 @@ jobs:
 
           if  [ ${{ needs.get_repository_dependencies.outputs.dependency_result }} == "npm:express" ] ; then
            echo "Copying Dockerfiles/nodejs/Dockerfile into repository"
-           cp ../../../Dockerfiles/nodejs/Dockerfile . 
+           cp ../../../Dockerfiles/nodejs/Dockerfile .
+
+           FILE_NAME=$(echo "server.js")
+             
+           if [ -f ./main.js ]; then
+             FILE_NAME=$(echo "main.js")
+           elif [-f ./app.js ]; then
+             FILE_NAME=$(echo "app.js")
+           fi 
+
+             echo "FILE_NAME=$FILE_NAME" >> "$GITHUB_OUTPUT"
           elif [ ${{ needs.get_repository_dependencies.outputs.dependency_result }} == "pip:flask" ] ; then
            echo "Copying Dockerfiles/flask/Dockerfile into repository"
            cp ../../../Dockerfiles/flask/Dockerfile .
@@ -174,7 +185,7 @@ jobs:
           echo ${repo_name_lower_case}
 
           if [ -f ./Dockerfile ]; then
-              docker build -t europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${user_name_lower_case}-${repo_name_lower_case}:${SHA_VALUE} .
+              docker build -t europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${user_name_lower_case}-${repo_name_lower_case}:${SHA_VALUE} . --build-arg file_name=${{ steps.get_file_name.outputs.FILE_NAME }}
 
               docker push europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/${user_name_lower_case}-${repo_name_lower_case}:${SHA_VALUE}
 
