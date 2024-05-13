@@ -77,7 +77,6 @@ jobs:
     uses: ./.github/workflows/deploy-image.yml
     needs: dockerise-image
     with:
-      is_update: "false"
       user_name: ${{ needs.dockerise-image.outputs.user_name }}
       repo_name: ${{ needs.dockerise-image.outputs.repo_name }}
       year: ${{ needs.dockerise-image.outputs.year }}

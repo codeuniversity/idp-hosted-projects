@@ -3,10 +3,6 @@ name: "deploy-repository"
 on:
   workflow_call:
     inputs:
-      is_update:
-        description: "Is it an update or a new deployment (either 'false' or 'true')"
-        required: true
-        type: string
       user_name:
         description: "Username of the hosted project"
         required: true
@@ -115,8 +111,4 @@ jobs:
         run: |
           user_name_lower_case=$(echo "$USER_NAME" | tr '[:upper:]' '[:lower:]')
           git pull
-          if [ "${{ inputs.is_update }}" == "false" ]; then
-            helm install ${user_name_lower_case} ./codeIdpChart  -f submissions-${YEAR}/${FOLDER_NAME}/values.yml -n submissions-${YEAR}
-          else
-            helm upgrade ${user_name_lower_case} ./codeIdpChart  -f submissions-${YEAR}/${FOLDER_NAME}/values.yml -n submissions-${YEAR}
-          fi
+          helm upgrade ${user_name_lower_case} ./codeIdpChart  -f submissions-${YEAR}/${FOLDER_NAME}/values.yml -n submissions-${YEAR}
