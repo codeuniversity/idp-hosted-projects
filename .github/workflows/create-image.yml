@@ -6,6 +6,10 @@ on:
       githubRepo:
         description: "Link of public github repo to deploy"
         required: true
+      dbCreds:
+        description: "Credentials for the DB"
+        required: false
+        
 
 jobs:
   create_student_submodule:
