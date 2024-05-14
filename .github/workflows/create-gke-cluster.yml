@@ -1,4 +1,4 @@
-name: "Create new GKE cluster"
+name: "create-gke-cluster"
 
 on:
   workflow_dispatch:
@@ -19,10 +19,6 @@ jobs:
       TF_VAR_project_id: code-idp
       TF_VAR_max_node_count: 3
       TF_VAR_initial_node_count: 1
-      TF_VAR_namedotcom_username: "notemann27" # temporary until we use a different domain
-      TF_VAR_namedotcom_token: ${{secrets.NAMEDOTCOM_TOKEN}} # temporary until we use a different domain
-      TF_VAR_idp_domain_name: "laurinnotemann.dev" # temporary until we use a different domain
-      TF_VAR_certificate_issuer_email: "laurin.notemann@gmail.com" # temporary until we use a different domain
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -56,3 +52,6 @@ jobs:
       - name: Terraform apply
         id: apply
         run: terraform apply -no-color -auto-approve
+  create-kubernetes-services:
+    uses: ./.github/workflows/create-kubernetes-default-services.yml
+    needs: create-cluster

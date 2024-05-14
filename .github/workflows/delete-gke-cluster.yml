@@ -1,4 +1,4 @@
-name: "Delete the GKE cluster"
+name: "delete-gke-cluster"
 
 on:
   workflow_dispatch:
