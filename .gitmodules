@@ -7,3 +7,6 @@
 [submodule "submissions-2024/maggieekubat-recipe/maggieekubat-recipe"]
 	path = submissions-2024/maggieekubat-recipe/maggieekubat-recipe
 	url = https://github.com/maggieekubat/Recipe
+[submodule "submissions-2024/elhamatokhi-nextbook/elhamatokhi-nextbook"]
+	path = submissions-2024/elhamatokhi-nextbook/elhamatokhi-nextbook
+	url = https://github.com/elhamatokhi/NextBook
