@@ -4,3 +4,6 @@
 [submodule "submissions-2024/joelheile-code-se19/joelheile-code-se19"]
 	path = submissions-2024/joelheile-code-se19/joelheile-code-se19
 	url = https://github.com/Joelheile/CODE-SE19
+[submodule "submissions-2024/maggieekubat-recipe/maggieekubat-recipe"]
+	path = submissions-2024/maggieekubat-recipe/maggieekubat-recipe
+	url = https://github.com/maggieekubat/Recipe
