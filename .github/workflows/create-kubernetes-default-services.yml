@@ -3,6 +3,9 @@ name: "create-kubernetes-default-services"
 on: 
   workflow_dispatch:
   workflow_call:
+    secrets:
+      NAMEDOTCOM_TOKEN:
+        required: true
 
 jobs:
   create-default-kube-services:

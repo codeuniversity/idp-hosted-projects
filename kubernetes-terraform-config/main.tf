@@ -30,10 +30,8 @@ terraform {
     prefix = "terraform/kube/state"
   }
 }
-provider "google" {}
 
-locals {
-}
+provider "google" {}
 
 data "google_container_cluster" "default" {
   project = var.project_id

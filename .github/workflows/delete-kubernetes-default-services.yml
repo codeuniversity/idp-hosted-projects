@@ -3,6 +3,9 @@ name: "delete-kubernetes-default-services"
 on:
   workflow_dispatch:
   workflow_call:
+    secrets:
+      NAMEDOTCOM_TOKEN:
+        required: true
     
 jobs:
   delete-default-kube-services:

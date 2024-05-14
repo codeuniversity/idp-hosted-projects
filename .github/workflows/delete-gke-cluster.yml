@@ -3,10 +3,15 @@ name: "delete-gke-cluster"
 on:
   workflow_dispatch:
   workflow_call:
+    secrets:
+      NAMEDOTCOM_TOKEN:
+        required: true
     
 jobs:
   delete-kube-services:
     uses: ./.github/workflows/delete-kubernetes-default-services.yml
+    secrets:
+      NAMEDOTCOM_TOKEN: ${{ secrets.NAMEDOTCOM_TOKEN }}
 
   delete-cluster:
     needs: delete-kube-services
