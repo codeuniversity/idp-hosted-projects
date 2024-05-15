@@ -1,0 +1,26 @@
+name: "test-workflow"
+
+on: 
+  workflow_dispatch:
+
+jobs:
+  create-default-kube-services:
+    permissions:
+      id-token: write
+      contents: read
+    name: "Test"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./kubernetes-terraform-config
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          create_credentials_file: true
+          workload_identity_provider: 'projects/1006240973223/locations/global/workloadIdentityPools/gha-create-gke-cluster/providers/github-actions'
+          service_account: 'terraform-gke@code-idp.iam.gserviceaccount.com'
