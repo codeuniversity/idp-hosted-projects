@@ -83,6 +83,10 @@ jobs:
 
   deploy-with-helm:
     needs: create-or-update-values-file
+    permissions:
+      id-token: write
+      contents: read
+    name: "Deploy the students project"
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -91,12 +95,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: set the kubernetes context
-        uses: azure/k8s-set-context@v3
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
         with:
-          method: service-account
-          k8s-url: ${{ secrets.KUBE_SERVER_URL }}
-          k8s-secret: ${{ secrets.KUBE_SERVICE_ACC_SECRET }}
+          create_credentials_file: true
+          workload_identity_provider: 'projects/1006240973223/locations/global/workloadIdentityPools/gha-create-gke-cluster/providers/github-actions'
+          service_account: 'kube-deploy-student-projects@code-idp.iam.gserviceaccount.com'
+      - id: 'get-credentials'
+        name: Get GKE creds
+        uses: 'google-github-actions/get-gke-credentials@v2'
+        with:
+          cluster_name: code-idp-gke
+          location: europe-west1
       - uses: azure/setup-helm@v4.2.0
         id: install-helm
         with:
