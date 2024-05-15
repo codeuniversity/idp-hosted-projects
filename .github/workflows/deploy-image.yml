@@ -19,11 +19,6 @@ on:
         description: "image name"
         required: true
         type: string
-    secrets:
-      KUBE_SERVER_URL:
-        required: true
-      KUBE_SERVICE_ACC_SECRET:
-        required: true
 
 jobs:
   create-or-update-values-file:
