@@ -23,4 +23,15 @@ jobs:
         with:
           create_credentials_file: true
           workload_identity_provider: 'projects/1006240973223/locations/global/workloadIdentityPools/gha-create-gke-cluster/providers/github-actions'
-          service_account: 'terraform-gke@code-idp.iam.gserviceaccount.com'
+          service_account: 'kube-deploy-student-projects@code-idp.iam.gserviceaccount.com'
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0' 
+      - name: Configure gcloud CLI
+        run: |
+          gcloud config set project code-idp
+          gcloud container clusters get-credentials code-idp-gke --zone europe-west1
+      - name: Deploy to GKE
+        run: |
+          kubectl get pods -n submissions-2024

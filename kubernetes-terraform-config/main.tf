@@ -193,6 +193,13 @@ resource "kubernetes_role_binding" "github_actions_rolebinding" {
     name      = kubernetes_service_account.github_actions_account.metadata[0].name
     namespace = kubernetes_namespace.submissions_namespace.metadata[0].name
   }
+
+  subject {
+    kind      = "User"
+    name      = "kube-deploy-student-projects@code-idp.iam.gserviceaccount.com"
+    namespace = kubernetes_namespace.submissions_namespace.metadata[0].name
+    api_group = "rbac.authorization.k8s.io"
+  }
 }
 
 resource "kubernetes_secret" "github_actions_token" {
