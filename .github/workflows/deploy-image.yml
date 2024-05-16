@@ -87,6 +87,8 @@ jobs:
       run:
         shell: bash
     if: needs.create-or-update-values-file.outputs.status == 'success'
+    outputs:
+      students_url: ${{ env.STUDENT_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -117,3 +119,4 @@ jobs:
         run: |
           git pull
           helm upgrade -i ${FOLDER_NAME} ./codeIdpChart  -f submissions-${YEAR}/${FOLDER_NAME}/values.yml -n submissions-${YEAR}
+          echo "STUDENT_URL=$(kubectl get ingress ${FOLDER_NAME}-ingress -n submissions-2024 -o jsonpath='{.spec.rules[*].host}')" >> $GITHUB_ENV
