@@ -78,10 +78,10 @@ jobs:
       - id: dependencies_extraction_result
         name: Provide the result of dependencies extraction to the next job
         run: |
-          if grep -q "npm:express" package_names_list.txt ; then
+          if grep -q "express" package_names_list.txt ; then
             echo "Found express dependency"
             DEPENDENCY_RESULT=$(echo "npm:express")
-          elif grep -q "pip:flask" package_names_list.txt ; then
+          elif grep -q "flask" package_names_list.txt ; then
             echo "Found flask dependency"
             DEPENDENCY_RESULT=$(echo "pip:flask")
           else
