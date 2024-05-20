@@ -10,3 +10,6 @@
 [submodule "submissions-2024/ramonxxo-foodfocus/ramonxxo-foodfocus"]
 	path = submissions-2024/ramonxxo-foodfocus/ramonxxo-foodfocus
 	url = https://github.com/ramonxxo/foodfocus
+[submodule "submissions-2024/anzhelaschults-hand-in-2-4-html-css/anzhelaschults-hand-in-2-4-html-css"]
+	path = submissions-2024/anzhelaschults-hand-in-2-4-html-css/anzhelaschults-hand-in-2-4-html-css
+	url = https://github.com/anzhelaschults/Hand-in-2-4-HTML-CSS
