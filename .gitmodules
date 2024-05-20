@@ -13,3 +13,6 @@
 [submodule "submissions-2024/anzhelaschults-hand-in-2-4-html-css/anzhelaschults-hand-in-2-4-html-css"]
 	path = submissions-2024/anzhelaschults-hand-in-2-4-html-css/anzhelaschults-hand-in-2-4-html-css
 	url = https://github.com/anzhelaschults/Hand-in-2-4-HTML-CSS
+[submodule "submissions-2024/elhamatokhi-nextbook/elhamatokhi-nextbook"]
+	path = submissions-2024/elhamatokhi-nextbook/elhamatokhi-nextbook
+	url = https://github.com/elhamatokhi/NextBook
