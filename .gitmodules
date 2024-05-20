@@ -7,3 +7,6 @@
 [submodule "submissions-2024/lxnnartgit-fourth-submission-se-web-dev/lxnnartgit-fourth-submission-se-web-dev"]
 	path = submissions-2024/lxnnartgit-fourth-submission-se-web-dev/lxnnartgit-fourth-submission-se-web-dev
 	url = https://github.com/Lxnnartgit/fourth-submission-SE-web-dev
+[submodule "submissions-2024/ramonxxo-foodfocus/ramonxxo-foodfocus"]
+	path = submissions-2024/ramonxxo-foodfocus/ramonxxo-foodfocus
+	url = https://github.com/ramonxxo/foodfocus
