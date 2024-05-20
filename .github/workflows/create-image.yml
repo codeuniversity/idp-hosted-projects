@@ -93,4 +93,4 @@ jobs:
       image: ${{ needs.dockerise-image.outputs.image_name }}
       email: ${{ github.event.inputs.email }}
     secrets:
-      DEPENDENCY_GRAPH_TOKEN: ${{ secrets.MAIL_PASSWORD }}
+      MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
