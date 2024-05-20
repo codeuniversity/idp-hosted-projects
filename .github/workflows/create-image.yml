@@ -6,6 +6,10 @@ on:
       githubRepo:
         description: "Link of public github repo to deploy"
         required: true
+    outputs:
+      student_url:
+        description: "Link of student's repository"
+        value: ${{ jobs.get_students_url.outputs.student_url }}
 
 jobs:
   create_student_submodule:
@@ -88,3 +92,9 @@ jobs:
       repo_name: ${{ needs.dockerise-image.outputs.repo_name }}
       year: ${{ needs.dockerise-image.outputs.year }}
       image: ${{ needs.dockerise-image.outputs.image_name }}
+
+  get_students_url:
+    runs-on: ubuntu-latest
+    needs: trigger_deployment
+    outputs:
+      student_url: ${{ needs.trigger_deployment.outputs.student_url }}

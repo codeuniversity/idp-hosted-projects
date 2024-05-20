@@ -19,6 +19,10 @@ on:
         description: "image name"
         required: true
         type: string
+    outputs:
+      student_url:
+        description: "student's deployment url"
+        value: ${{ jobs.deploy-with-helm.outputs.students_url }}
 
 jobs:
   create-or-update-values-file:
@@ -92,16 +96,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - id: 'auth'
-        name: 'Authenticate to Google Cloud'
-        uses: 'google-github-actions/auth@v2'
+      - id: "auth"
+        name: "Authenticate to Google Cloud"
+        uses: "google-github-actions/auth@v2"
         with:
           create_credentials_file: true
-          workload_identity_provider: 'projects/1006240973223/locations/global/workloadIdentityPools/gha-create-gke-cluster/providers/github-actions'
-          service_account: 'kube-deploy-student-projects@code-idp.iam.gserviceaccount.com'
-      - id: 'get-credentials'
+          workload_identity_provider: "projects/1006240973223/locations/global/workloadIdentityPools/gha-create-gke-cluster/providers/github-actions"
+          service_account: "kube-deploy-student-projects@code-idp.iam.gserviceaccount.com"
+      - id: "get-credentials"
         name: Get GKE creds
-        uses: 'google-github-actions/get-gke-credentials@v2'
+        uses: "google-github-actions/get-gke-credentials@v2"
         with:
           cluster_name: code-idp-gke
           location: europe-west1
