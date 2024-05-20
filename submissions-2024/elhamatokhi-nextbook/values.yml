@@ -1,0 +1,3 @@
+  host: elhamatokhi-nextbook.idp.laurinnotemann.dev
+  image: europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/elhamatokhi-nextbook:52a0d74209066ffe77ada2c79b94e175eb4517ec
+  name: elhamatokhi-nextbook
