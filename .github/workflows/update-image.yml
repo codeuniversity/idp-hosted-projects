@@ -6,6 +6,10 @@ on:
       githubRepo:
         description: "Link of public github repo to deploy"
         required: true
+    outputs:
+      student_url:
+        description: "student's deployment url"
+        value: ${{ jobs.deploy-with-helm.outputs.students_url }}
 
 jobs:
   check_if_update_needed:
@@ -97,3 +101,9 @@ jobs:
       repo_name: ${{ needs.dockerise-image.outputs.repo_name }}
       year: ${{ needs.dockerise-image.outputs.year }}
       image: ${{ needs.dockerise-image.outputs.image_name }}
+
+  get_students_url:
+    runs-on: ubuntu-latest
+    needs: trigger_deployment
+    outputs:
+      student_url: ${{ needs.trigger_deployment.outputs.student_url }}
