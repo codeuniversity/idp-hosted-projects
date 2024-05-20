@@ -6,6 +6,9 @@ on:
       githubRepo:
         description: "Link of public github repo to deploy"
         required: true
+      email:
+        description: "Email address to send email to"
+        required: true
 
 jobs:
   create_student_submodule:
@@ -88,3 +91,4 @@ jobs:
       repo_name: ${{ needs.dockerise-image.outputs.repo_name }}
       year: ${{ needs.dockerise-image.outputs.year }}
       image: ${{ needs.dockerise-image.outputs.image_name }}
+      email: ${{ github.event.inputs.email }}

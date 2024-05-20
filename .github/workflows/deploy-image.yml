@@ -19,6 +19,10 @@ on:
         description: "image name"
         required: true
         type: string
+      email:
+        description: "Email address to send email to"
+        required: true
+        type: string
 
 jobs:
   create-or-update-values-file:
@@ -92,16 +96,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - id: 'auth'
-        name: 'Authenticate to Google Cloud'
-        uses: 'google-github-actions/auth@v2'
+      - id: "auth"
+        name: "Authenticate to Google Cloud"
+        uses: "google-github-actions/auth@v2"
         with:
           create_credentials_file: true
-          workload_identity_provider: 'projects/1006240973223/locations/global/workloadIdentityPools/gha-create-gke-cluster/providers/github-actions'
-          service_account: 'kube-deploy-student-projects@code-idp.iam.gserviceaccount.com'
-      - id: 'get-credentials'
+          workload_identity_provider: "projects/1006240973223/locations/global/workloadIdentityPools/gha-create-gke-cluster/providers/github-actions"
+          service_account: "kube-deploy-student-projects@code-idp.iam.gserviceaccount.com"
+      - id: "get-credentials"
         name: Get GKE creds
-        uses: 'google-github-actions/get-gke-credentials@v2'
+        uses: "google-github-actions/get-gke-credentials@v2"
         with:
           cluster_name: code-idp-gke
           location: europe-west1
@@ -120,3 +124,28 @@ jobs:
           git pull
           helm upgrade -i ${FOLDER_NAME} ./codeIdpChart  -f submissions-${YEAR}/${FOLDER_NAME}/values.yml -n submissions-${YEAR}
           echo "STUDENT_URL=$(kubectl get ingress ${FOLDER_NAME}-ingress -n submissions-2024 -o jsonpath='{.spec.rules[*].host}')" >> $GITHUB_ENV
+
+    send_email_with_url:
+      needs: deploy-with-helm
+      permissions:
+        id-token: write
+        contents: read
+      name: "send an email address with the url"
+      runs-on: ubuntu-latest
+      defaults:
+        run:
+          shell: bash
+      if: ${{ needs.deploy-with-helm.outputs.students_url }}
+      steps:
+        - name: Send mail
+          uses: dawidd6/action-send-mail@v3
+          with:
+            server_address: mail.your-server.de
+            server_port: 465
+            secure: true
+            username: code-idp-bot@421337.de
+            password: ${{secrets.MAIL_PASSWORD}}
+            subject: Application deployed successfully! ✨
+            to: ${{ inputs.email }}
+            from: The friendly code idp bot
+            body: "Your application has been deployed! 🎉 you can find your application deployed on the following url: ${{ needs.deploy-with-helm.outputs.students_url }}"
