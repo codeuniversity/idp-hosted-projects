@@ -16,3 +16,6 @@
 [submodule "submissions-2024/elhamatokhi-nextbook/elhamatokhi-nextbook"]
 	path = submissions-2024/elhamatokhi-nextbook/elhamatokhi-nextbook
 	url = https://github.com/elhamatokhi/NextBook
+[submodule "submissions-2024/ami-sukumar-jeweler-project-git/ami-sukumar-jeweler-project-git"]
+	path = submissions-2024/ami-sukumar-jeweler-project-git/ami-sukumar-jeweler-project-git
+	url = https://github.com/Ami-Sukumar/Jeweler-project.git
