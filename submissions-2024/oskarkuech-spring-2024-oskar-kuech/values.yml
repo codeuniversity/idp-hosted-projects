@@ -1,0 +1,3 @@
+  host: oskarkuech-spring-2024-oskar-kuech.idp.laurinnotemann.dev
+  image: europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/oskarkuech-spring-2024-oskar-kuech:3f7495d68057ce3868d0380fa91a3e31af086770
+  name: oskarkuech-spring-2024-oskar-kuech
