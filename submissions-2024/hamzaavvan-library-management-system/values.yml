@@ -1,3 +1,0 @@
-  host: hamzaavvan-library-management-system.idp.laurinnotemann.dev
-  image: europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/hamzaavvan-library-management-system:e784a1866964ca4bbb5689462c22fc550d114605
-  name: hamzaavvan-library-management-system
