@@ -141,7 +141,7 @@ jobs:
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: mail.your-server.de
-          server_port: 587
+          server_port: 465
           secure: true
           username: code-idp-bot@421337.de
           password: ${{secrets.MAIL_PASSWORD}}
