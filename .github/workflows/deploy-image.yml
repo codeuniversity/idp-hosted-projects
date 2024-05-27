@@ -19,13 +19,26 @@ on:
         description: "image name"
         required: true
         type: string
+      env_vars:
+        description: "Environment variables from Student"
+        required: true
+        type: string
     secrets:
       KUBE_SERVER_URL:
         required: true
       KUBE_SERVICE_ACC_SECRET:
         required: true
-
+        
 jobs:
+  log-env-vars:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Log the environment variables
+        run: |
+          echo "Environment Variables from Backstage: ${{ inputs.env_vars }}"
   create-or-update-values-file:
     permissions:
       contents: "write"
