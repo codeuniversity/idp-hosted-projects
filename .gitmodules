@@ -22,3 +22,6 @@
 [submodule "submissions-2024/oskarkuech-spring-2024-oskar-kuech/oskarkuech-spring-2024-oskar-kuech"]
 	path = submissions-2024/oskarkuech-spring-2024-oskar-kuech/oskarkuech-spring-2024-oskar-kuech
 	url = https://github.com/OskarKuech/Spring_2024_Oskar_Kuech
+[submodule "submissions-2024/avahurstcode-refmanager/avahurstcode-refmanager"]
+	path = submissions-2024/avahurstcode-refmanager/avahurstcode-refmanager
+	url = https://github.com/AvaHurstCode/RefManager
