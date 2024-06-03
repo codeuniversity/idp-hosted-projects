@@ -1,0 +1,3 @@
+  host: mcmarian-cipher-landing-page.idp.laurinnotemann.dev
+  image: europe-west10-docker.pkg.dev/code-idp/idp-artifact-registry/mcmarian-cipher-landing-page:4cb2622d529a2dd7e565cbcbdf8b79d393e47952
+  name: mcmarian-cipher-landing-page
