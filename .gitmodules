@@ -25,3 +25,6 @@
 [submodule "submissions-2024/avahurstcode-refmanager/avahurstcode-refmanager"]
 	path = submissions-2024/avahurstcode-refmanager/avahurstcode-refmanager
 	url = https://github.com/AvaHurstCode/RefManager
+[submodule "submissions-2024/mcmarian-cipher-landing-page/mcmarian-cipher-landing-page"]
+	path = submissions-2024/mcmarian-cipher-landing-page/mcmarian-cipher-landing-page
+	url = https://github.com/McMarian/Cipher-Landing-Page
